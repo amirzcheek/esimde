@@ -1,0 +1,81 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * { @apply border-gray-200; }
+  html { scroll-behavior: smooth; }
+  body {
+    @apply bg-white text-gray-900 antialiased;
+    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  }
+}
+
+@layer components {
+  /* Gradient button — solid fill (cyan→blue) */
+  .btn-grad {
+    @apply inline-flex items-center gap-3 rounded-full px-5 py-2.5
+           font-semibold text-white transition-all duration-300
+           hover:shadow-lg;
+    background: linear-gradient(to right, #06b6d4, #3b82f6);
+  }
+  .btn-grad:hover {
+    background-size: 150% 150%;
+  }
+
+  /* Gradient button — outline style (white bg, gradient border+text) */
+  .btn-grad-outline {
+    @apply inline-flex rounded-full overflow-hidden transition-all duration-300 hover:shadow-lg;
+    background: linear-gradient(to right, #06b6d4, #3b82f6);
+    padding: 2px;
+  }
+  .btn-grad-outline > span {
+    @apply bg-white flex items-center gap-3 rounded-full pl-5 pr-2 py-2;
+  }
+  .btn-grad-outline .btn-text {
+    @apply font-semibold text-lg;
+    background: linear-gradient(to right, #06b6d4, #3b82f6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .btn-grad-outline .btn-icon {
+    @apply w-8 h-8 flex items-center justify-center rounded-full flex-shrink-0;
+    background: linear-gradient(to right, #06b6d4, #3b82f6);
+  }
+
+  /* Input — blue-50 bg, rounded-full */
+  .input-esimde {
+    @apply w-full bg-blue-50 rounded-full outline-none ring-2 ring-transparent px-4 py-3
+           focus:ring-cyan-400 transition-all;
+  }
+  .input-esimde.error { @apply ring-red-500; }
+
+  /* Cards */
+  .card { @apply bg-white rounded-lg border border-gray-200 shadow-card p-5; }
+  .card-lg { @apply bg-white rounded-2xl border border-gray-200 shadow-card p-6; }
+
+  /* Navigation link */
+  .nav-link {
+    @apply font-medium text-gray-700 hover:text-blue-600 transition-all duration-150;
+  }
+
+  /* Badges */
+  .badge { @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-medium; }
+  .badge-pending   { @apply bg-yellow-100 text-yellow-800; }
+  .badge-confirmed { @apply bg-blue-100   text-blue-800; }
+  .badge-completed { @apply bg-green-100  text-green-800; }
+  .badge-cancelled { @apply bg-gray-100   text-gray-500; }
+  .badge-online    { @apply bg-green-100  text-green-800; }
+  .badge-offline   { @apply bg-purple-100 text-purple-800; }
+
+  /* Score bar */
+  .score-track {
+    @apply relative w-full h-6 rounded-lg overflow-hidden;
+    background: linear-gradient(to right, #ef4444 0%, #f59e0b 45%, #22c55e 100%);
+  }
+  .score-needle {
+    @apply absolute top-0 h-full w-0.5 bg-gray-800 rounded;
+    transition: left 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}

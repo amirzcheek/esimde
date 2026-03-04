@@ -1,0 +1,245 @@
+import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { useAuthStore } from '@/store/auth'
+import { usersApi, appointmentsApi, getAvatarUrl } from '@/api'
+import { toast } from 'sonner'
+import type { Me, Appointment, Conclusion, Test } from '@/types'
+
+export default function DashboardPage() {
+  const { user: authUser } = useAuthStore()
+  const [user, setUser] = useState<Me | null>(null)
+  const [lastTest, setLastTest] = useState<Test | null>(null)
+  const [latestConclusion, setLatestConclusion] = useState<Conclusion | null>(null)
+  const [nearestAppointment, setNearestAppointment] = useState<Appointment | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    usersApi.getProfile()
+      .then(r => {
+        setUser(r.data.user)
+        setLastTest(r.data.last_test)
+        setLatestConclusion(r.data.latest_conclusion)
+        setNearestAppointment(r.data.nearest_appointment)
+      })
+      .catch(e => {
+        console.error('profile error', e)
+        setError('Не удалось загрузить профиль')
+      })
+      .finally(() => setLoading(false))
+  }, [])
+
+  const initials = user
+    ? `${user.last_name?.[0] ?? ''}${user.first_name?.[0] ?? ''}`
+    : authUser ? `${authUser.last_name?.[0] ?? ''}${authUser.first_name?.[0] ?? ''}` : ''
+
+  const displayName = user
+    ? `${user.last_name ?? ''} ${user.first_name?.[0] ?? ''}.${user.middle_name?.[0] ? ' ' + user.middle_name[0] + '.' : ''}`
+    : authUser ? `${authUser.last_name ?? ''} ${authUser.first_name?.[0] ?? ''}.` : ''
+
+  if (loading) return (
+    <div className="flex items-center justify-center min-h-[60vh]">
+      <div className="text-gray-400 text-sm">Загрузка...</div>
+    </div>
+  )
+
+  if (error) return (
+    <div className="flex items-center justify-center min-h-[60vh]">
+      <div className="text-red-500 text-sm">{error}</div>
+    </div>
+  )
+
+  return (
+    <section className="container max-w-7xl mx-auto py-6 px-4">
+      <div className="flex flex-col lg:flex-row items-start gap-6">
+
+        {/* Main */}
+        <div className="w-full lg:w-2/3 flex flex-col">
+          <div className="flex flex-col sm:flex-row items-start gap-6 mb-6">
+            {/* Avatar */}
+            <div className="flex flex-none items-center justify-center size-24 bg-red-100 font-medium text-3xl text-red-500 rounded-full overflow-hidden">
+              {getAvatarUrl(user?.avatar_path)
+                ? <img src={getAvatarUrl(user?.avatar_path)!} className="w-24 h-24 object-cover" alt="avatar" />
+                : (initials || '?')
+              }
+            </div>
+            <div className="w-full flex flex-col">
+              <div className="flex items-center mb-3">
+                <h1 className="font-semibold text-2xl text-zinc-800">{displayName || 'Профиль'}</h1>
+                <Link to="/dashboard/settings" className="text-gray-500 hover:bg-gray-50 hover:text-blue-500 rounded-md ml-3 p-2">
+                  <svg className="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z"/>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
+                  </svg>
+                </Link>
+              </div>
+              <hr className="mb-4 border-zinc-200"/>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+                {[
+                  { label: 'Возраст', val: user?.age ? `${user.age} лет` : '-' },
+                  { label: 'Рост',    val: user?.height ? `${user.height} см` : '-' },
+                  { label: 'Вес',     val: user?.weight ? `${user.weight} кг` : '-' },
+                  { label: 'Телефон', val: user?.phone ?? '-' },
+                ].map(({ label, val }) => (
+                  <div key={label} className="flex flex-col items-center p-3 bg-gray-50 rounded-lg">
+                    <div className="text-gray-500 mb-1 text-xs">{label}</div>
+                    <div className="font-medium text-xs">{val}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Активная запись с кнопкой отмены */}
+          {nearestAppointment && (
+            <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h3 className="font-semibold text-blue-700 mb-1 flex items-center gap-2">
+                    <span>📅</span> Ближайший приём
+                  </h3>
+                  <div className="text-sm text-blue-800">
+                    <span className="font-medium">
+                      {new Date(nearestAppointment.date + 'T00:00:00').toLocaleDateString('ru-RU', {
+                        day: 'numeric', month: 'long'
+                      })}
+                    </span>
+                    {' в '}
+                    <span className="font-medium">{nearestAppointment.start_time}</span>
+                    {(nearestAppointment.doctor as any)?.full_name && (
+                      <div className="mt-0.5 text-blue-600">
+                        — {(nearestAppointment.doctor as any).full_name}
+                      </div>
+                    )}
+                    {nearestAppointment.type && (
+                      <div className="mt-0.5 text-xs text-blue-500">
+                        {nearestAppointment.type === 'online' ? '🌐 Онлайн' : '🏥 Офлайн'}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <button
+                  onClick={async () => {
+                    if (!confirm('Отменить запись?')) return
+                    try {
+                      await appointmentsApi.cancel(nearestAppointment.id)
+                      toast.success('Запись отменена')
+                      setNearestAppointment(null)
+                    } catch (e: any) {
+                      toast.error(e?.response?.data?.detail || 'Ошибка отмены')
+                    }
+                  }}
+                  className="flex-shrink-0 text-xs px-3 py-1.5 rounded-full border border-red-200 text-red-500 hover:bg-red-50 transition"
+                >
+                  Отменить
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Рекомендации врача */}
+          {latestConclusion && (
+            <div className="bg-white border border-blue-200 rounded-lg p-5 mb-4">
+              <h3 className="font-semibold text-lg text-blue-600 flex items-center gap-2 mb-3">
+                <span>🩺</span> Рекомендации врача
+              </h3>
+              <div className="space-y-3 text-sm">
+                {latestConclusion.examination_recommendations && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-1"><span>🔬</span><span className="font-semibold text-gray-700">Анализы</span></div>
+                    <div className="pl-7 text-gray-600 whitespace-pre-line">{latestConclusion.examination_recommendations}</div>
+                  </div>
+                )}
+                {latestConclusion.diet_recommendations && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-1"><span>🥗</span><span className="font-semibold text-gray-700">Питание</span></div>
+                    <div className="pl-7 text-gray-600 whitespace-pre-line">{latestConclusion.diet_recommendations}</div>
+                  </div>
+                )}
+                {latestConclusion.medications && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-1"><span>💊</span><span className="font-semibold text-gray-700">Лекарства</span></div>
+                    <div className="pl-7 text-gray-600 whitespace-pre-line">{latestConclusion.medications}</div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Предварительное заключение */}
+          <div className="bg-white border border-zinc-200 rounded-lg p-4">
+            <div className="flex items-start justify-between mb-2">
+              <h3 className="font-semibold text-blue-500 text-sm">Предварительное заключение</h3>
+            </div>
+            {user?.preliminary_conclusion ? (
+              <div className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">{user.preliminary_conclusion}</div>
+            ) : (
+              <p className="text-sm text-gray-500">Заключение пока не заполнено.</p>
+            )}
+          </div>
+        </div>
+
+        {/* Sidebar */}
+        <div className="w-full lg:w-1/3 flex flex-col space-y-4">
+
+          {/* Результат теста */}
+          {lastTest ? (
+            <div className="bg-white border border-zinc-200 rounded-lg p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="font-semibold text-zinc-800">Результат теста</div>
+                <div className="text-xl font-bold text-blue-600">{lastTest.neurocognitive_score}%</div>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
+                <div
+                  className="h-2 rounded-full"
+                  style={{
+                    width: `${lastTest.neurocognitive_score}%`,
+                    background: 'linear-gradient(to right, #06b6d4, #3b82f6)'
+                  }}
+                />
+              </div>
+              <div className="flex items-center gap-3 mt-1">
+                <Link to={`/report/${lastTest.hash}`} className="text-xs text-cyan-500 hover:underline">
+                  Посмотреть отчёт →
+                </Link>
+                <Link to="/test/go" className="text-xs text-gray-400 hover:text-gray-600 hover:underline">
+                  Пройти заново
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-white border border-zinc-200 rounded-lg p-4 text-center">
+              <p className="text-sm text-gray-500 mb-3">Вы ещё не проходили тест</p>
+              <Link to="/test" className="text-sm text-cyan-500 hover:underline">Пройти тест →</Link>
+            </div>
+          )}
+
+          {/* Кнопки */}
+          <Link
+            to="/appointment"
+            className="inline-flex items-center justify-center rounded-full p-0.5 transition-all hover:shadow-lg"
+            style={{ background: 'linear-gradient(to right, #06b6d4, #3b82f6)' }}
+          >
+            <div className="flex items-center justify-center w-full rounded-full px-4 py-3">
+              <span className="font-semibold text-white text-sm">Записаться на приём</span>
+            </div>
+          </Link>
+
+          <Link
+            to="/voice-assistant"
+            className="inline-flex items-center justify-center rounded-full border border-cyan-300 px-4 py-3 text-sm font-semibold text-cyan-600 hover:bg-cyan-50 transition"
+          >
+            🎙 Голосовой ассистент
+          </Link>
+
+          <Link
+            to="/dashboard/settings"
+            className="inline-flex items-center justify-center rounded-full border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition"
+          >
+            📄 Загрузить анализы
+          </Link>
+        </div>
+      </div>
+    </section>
+  )
+}
