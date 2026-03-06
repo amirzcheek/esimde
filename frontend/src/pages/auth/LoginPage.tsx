@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { authApi } from '@/api/auth'
+import { authApi } from '@/api'
 import { useAuthStore } from '@/store/auth'
 import AuthLayout from '@/components/layout/AuthLayout'
 
@@ -48,80 +48,54 @@ export default function LoginPage() {
     }
   }
 
-  const btnCls = 'group flex-none inline-flex items-center rounded-full cursor-pointer overflow-hidden transition-all duration-300 p-0.5'
-  const btnStyle = { background: 'linear-gradient(to right, #06b6d4, #3b82f6)' }
+  const gradStyle = { background: 'linear-gradient(to right, #06b6d4, #3b82f6)' }
   const modeBtnCls = (active: boolean) =>
-    `px-3 py-1.5 rounded-full text-sm border transition-all ${active ? 'text-white border-transparent' : 'bg-white text-gray-700 border-gray-300'}`
+    `px-4 py-1.5 rounded-full text-sm border transition-all ${active ? 'text-white border-transparent' : 'bg-white text-gray-700 border-gray-300'}`
 
   return (
     <AuthLayout>
       <div className="w-full max-w-sm flex flex-col gap-6">
-        <div className="flex flex-col items-start">
-          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-800 mb-1">Авторизация</h1>
-        </div>
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Авторизация</h1>
 
-        {statusMsg && <div className="text-sm text-center text-green-600">{statusMsg}</div>}
-
-        {/* DEV: показываем код если бэкенд вернул */}
+        {statusMsg && (
+          <div className="text-sm text-center text-green-600 bg-green-50 rounded-xl p-2">{statusMsg}</div>
+        )}
         {devCode && (
           <div className="text-sm text-center bg-yellow-50 border border-yellow-200 rounded-xl p-2 text-yellow-800">
             DEV: код <strong>{devCode}</strong>
           </div>
         )}
 
-        {/* Mode switcher */}
-        <div className="flex items-center gap-2 mb-2">
-          <button
-            type="button"
-            onClick={() => { setMode('patient'); setStep('email'); setError('') }}
-            className={modeBtnCls(mode === 'patient')}
-            style={mode === 'patient' ? btnStyle : {}}
-          >
+        {/* Переключатель */}
+        <div className="flex items-center gap-2">
+          <button type="button" onClick={() => { setMode('patient'); setStep('email'); setError('') }}
+            className={modeBtnCls(mode === 'patient')} style={mode === 'patient' ? gradStyle : {}}>
             Пациент
           </button>
-          <button
-            type="button"
-            onClick={() => { setMode('doctor'); setError('') }}
-            className={modeBtnCls(mode === 'doctor')}
-            style={mode === 'doctor' ? btnStyle : {}}
-          >
+          <button type="button" onClick={() => { setMode('doctor'); setError('') }}
+            className={modeBtnCls(mode === 'doctor')} style={mode === 'doctor' ? gradStyle : {}}>
             Врач
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           {mode === 'patient' ? (
             <>
               <div className="flex flex-col">
                 <label className="font-medium text-sm mb-2">E-mail</label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  className={`input-esimde ${error && step === 'email' ? 'error' : ''}`}
-                  placeholder="example@mail.com"
-                  disabled={step === 'code'}
-                  autoComplete="email"
-                />
+                <input type="email" value={email} onChange={e => setEmail(e.target.value)}
+                  className="input-esimde" placeholder="example@mail.com"
+                  disabled={step === 'code'} autoComplete="email" required />
               </div>
               {step === 'code' && (
                 <div className="flex flex-col">
                   <label className="font-medium text-sm mb-2">Код из письма</label>
-                  <input
-                    type="text"
-                    value={code}
-                    onChange={e => setCode(e.target.value)}
-                    className={`input-esimde ${error && step === 'code' ? 'error' : ''}`}
-                    placeholder="XXXX"
-                    autoComplete="one-time-code"
-                    maxLength={6}
-                  />
-                  <button
-                    type="button"
-                    className="text-xs text-cyan-500 mt-2 text-left hover:underline"
-                    onClick={() => { setStep('email'); setCode(''); setDevCode(''); setStatusMsg(''); setError('') }}
-                  >
-                    Изменить email
+                  <input type="text" value={code} onChange={e => setCode(e.target.value)}
+                    className="input-esimde" placeholder="XXXX"
+                    autoComplete="one-time-code" maxLength={6} required />
+                  <button type="button" className="text-xs text-cyan-500 mt-2 text-left hover:underline"
+                    onClick={() => { setStep('email'); setCode(''); setDevCode(''); setStatusMsg(''); setError('') }}>
+                    ← Изменить email
                   </button>
                 </div>
               )}
@@ -130,40 +104,30 @@ export default function LoginPage() {
             <>
               <div className="flex flex-col">
                 <label className="font-medium text-sm mb-2">Логин врача</label>
-                <input
-                  type="text"
-                  value={username}
-                  onChange={e => setUsername(e.target.value)}
-                  className={`input-esimde ${error ? 'error' : ''}`}
-                  placeholder="doctor"
-                  autoComplete="username"
-                />
+                <input type="text" value={username} onChange={e => setUsername(e.target.value)}
+                  className="input-esimde" placeholder="doctor" autoComplete="username" required />
               </div>
               <div className="flex flex-col">
                 <label className="font-medium text-sm mb-2">Пароль</label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  className={`input-esimde ${error ? 'error' : ''}`}
-                  placeholder="••••••••"
-                  autoComplete="current-password"
-                />
+                <input type="password" value={password} onChange={e => setPassword(e.target.value)}
+                  className="input-esimde" placeholder="••••••••" autoComplete="current-password" required />
               </div>
             </>
           )}
 
-          {error && <div className="text-sm text-red-500 bg-red-50 rounded-xl px-3 py-2">{error}</div>}
+          {error && (
+            <div className="text-sm text-red-500 bg-red-50 rounded-xl px-3 py-2">{error}</div>
+          )}
 
-          <div className="flex items-center justify-start">
-            <button type="submit" className={btnCls} style={btnStyle} disabled={loading}>
-              <div className="bg-transparent flex items-center space-x-4 w-full rounded-full px-4 py-2">
-                <span className="font-semibold text-white transition-all duration-300">
-                  {loading ? 'Загрузка...' : step === 'email' && mode === 'patient' ? 'Получить код' : 'Войти'}
-                </span>
-              </div>
-            </button>
-          </div>
+          <button type="submit" disabled={loading}
+            className="inline-flex items-center rounded-full p-0.5 transition-all hover:shadow-lg disabled:opacity-60"
+            style={gradStyle}>
+            <div className="bg-transparent flex items-center rounded-full px-5 py-2.5">
+              <span className="font-semibold text-white">
+                {loading ? 'Загрузка...' : (step === 'email' && mode === 'patient') ? 'Получить код' : 'Войти'}
+              </span>
+            </div>
+          </button>
         </form>
       </div>
     </AuthLayout>
