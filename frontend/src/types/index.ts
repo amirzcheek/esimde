@@ -130,7 +130,7 @@ export interface PatientDetail {
     medications: string | null; diet_recommendations: string | null; examination_recommendations: string | null
     created_at: string; appointment_date: string | null
   }>
-  analyses: Array<{ id: number; file_name: string; description: string | null; uploaded_at: string }>
+  analyses: Array<{ id: number; file_name: string; file_path: string; description: string | null; uploaded_at: string }>
   last_test: { hash: string; score: number; points: number; completed_at: string | null } | null
 }
 

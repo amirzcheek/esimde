@@ -41,8 +41,8 @@ export default function SchedulePage() {
       [dow]: {
         ...prev[dow],
         [ts]: {
-          type: prev[dow]?.[ts]?.type || 'both',
           ...prev[dow]?.[ts],
+          type: prev[dow]?.[ts]?.type || 'both',
           enabled: !prev[dow]?.[ts]?.enabled,
         },
       },
