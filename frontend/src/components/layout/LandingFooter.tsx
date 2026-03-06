@@ -16,14 +16,14 @@ export default function LandingFooter() {
         {/* Newsletter */}
         <div className="flex flex-col ml-0 md:ml-14">
           <h3 className="font-semibold text-gray-800 mb-2">Подпишитесь на обновления</h3>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
             <input
-              className="min-w-[250px] bg-white text-sm border border-gray-200 rounded-full px-4 py-2 outline-none focus:border-cyan-400"
+              className="w-full sm:min-w-[220px] bg-white text-sm border border-gray-200 rounded-full px-4 py-2 outline-none focus:border-cyan-400"
               type="text"
               placeholder="Электронная почта"
             />
             <button
-              className="inline-flex items-center rounded-full px-4 py-2 text-sm font-semibold text-white hover:opacity-90 transition"
+              className="inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold text-white hover:opacity-90 transition whitespace-nowrap"
               style={{ background: 'linear-gradient(to right, #06b6d4, #3b82f6)' }}
             >
               Подписаться
