@@ -38,6 +38,7 @@ jobs:
         working-directory: frontend
         run: |
           npm install
+          npx tsc --noEmit 2>&1 || true
           npm run build
 
       - name: Upload dist to server
@@ -49,6 +50,7 @@ jobs:
           source: "frontend/dist/*"
           target: "/var/www/esimde/frontend/dist"
           strip_components: 2
+          overwrite: true
 
       - name: Reload nginx
         uses: appleboy/ssh-action@v1.0.0
