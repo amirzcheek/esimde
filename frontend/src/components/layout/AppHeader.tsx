@@ -56,8 +56,8 @@ export default function AppHeader() {
   ]
 
   return (
-    <>
-      <header className="h-14 border-b border-gray-100 bg-white sticky top-0 z-50">
+    <div className="sticky top-0 z-50">
+      <header className="h-14 border-b border-gray-100 bg-white">
         <div className="flex items-center h-full max-w-7xl mx-auto px-4 gap-4">
 
           {/* Логотип */}
@@ -132,7 +132,7 @@ export default function AppHeader() {
 
       {/* Мобильное меню */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-white border-b border-gray-100 z-40 shadow-sm">
+        <div className="md:hidden bg-white border-b border-gray-100 shadow-sm">
           <nav className="flex flex-col px-4 py-3 gap-1">
             {navLinks.map(l => (
               <Link
@@ -146,6 +146,6 @@ export default function AppHeader() {
           </nav>
         </div>
       )}
-    </>
+    </div>
   )
 }
