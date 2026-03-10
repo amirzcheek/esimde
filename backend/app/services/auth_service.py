@@ -166,7 +166,13 @@ async def get_or_create_user_by_email(db: AsyncSession, email: str) -> User:
 
 
 async def doctor_login(db: AsyncSession, username: str, password: str) -> Optional[User]:
-    result = await db.execute(select(User).where(User.username == username, User.is_doctor == True))
+    from sqlalchemy import or_
+    result = await db.execute(
+        select(User).where(
+            User.username == username,
+            or_(User.is_doctor == True, User.is_admin == True)
+        )
+    )
     user = result.scalar_one_or_none()
     if not user or not user.password:
         return None

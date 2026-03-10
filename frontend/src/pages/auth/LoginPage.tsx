@@ -27,7 +27,8 @@ export default function LoginPage() {
         const r = await authApi.doctorLogin({ username, password })
         setToken(r.data.access_token)
         if (r.data.user) setUser(r.data.user as any)
-        navigate('/doctor')
+        if (r.data.is_admin) navigate('/admin/audit')
+        else navigate('/doctor')
       } else if (step === 'email') {
         const r = await authApi.sendOtp({ email })
         setStatusMsg(`Код отправлен на ${email}`)
