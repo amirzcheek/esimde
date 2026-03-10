@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { testsApi } from '@/api'
 import { useAuthStore } from '@/store/auth'
@@ -42,10 +42,20 @@ function DInput({ value, onChange, placeholder, type = 'text', hasError, classNa
   value: string; onChange: (v: string) => void; placeholder?: string
   type?: string; hasError?: boolean; className?: string
 }) {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value
+    if (type === 'number') {
+      if (val === '' || /^\d*$/.test(val)) onChange(val)
+    } else {
+      onChange(val)
+    }
+  }
   return (
     <input
-      type={type} value={value} placeholder={placeholder}
-      onChange={e => onChange(e.target.value)}
+      type={type === 'number' ? 'text' : type}
+      inputMode={type === 'number' ? 'numeric' : undefined}
+      value={value} placeholder={placeholder}
+      onChange={handleChange}
       className={`w-full px-4 py-3 rounded-2xl border-2 text-sm outline-none transition-all
         ${hasError ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-gray-50 focus:border-cyan-400 focus:bg-white'}
         ${className}`}
@@ -328,16 +338,14 @@ const LINE_PAIRS = [
 function Q8({ onAnswer }: { onAnswer: (p: number) => void }) {
   const [items] = useState(() => shuffle(LINE_PAIRS).slice(0,5))
   const [cur, setCur] = useState(0)
-  const [ok, setOk]   = useState(0)
+  const okRef = useRef(0)  // ref вместо state — нет stale closure
 
-  // Автопереход после выбора — точно как в оригинале ($choose)
   const choose = (val: boolean) => {
-    const nc = ok + (items[cur].same===val?1:0)
-    setOk(nc)
-    if (cur < items.length-1) {
-      setCur(c=>c+1)
+    if (items[cur].same === val) okRef.current += 1
+    if (cur < items.length - 1) {
+      setCur(c => c + 1)
     } else {
-      onAnswer(nc) // передаём количество правильных (макс 5)
+      onAnswer(okRef.current)
     }
   }
   const item = items[cur]
@@ -390,16 +398,15 @@ const LPAIRS = [
 function Q9({ onAnswer }: { onAnswer: (p: number) => void }) {
   const [items] = useState(() => shuffle(LPAIRS).slice(0,5))
   const [cur, setCur] = useState(0)
-  const [ok, setOk]   = useState(0)
+  const okRef = useRef(0)  // ref вместо state — нет stale closure
 
   const choose = (val: boolean) => {
-    const nc = ok + (items[cur].same===val?1:0)
-    setOk(nc)
-    if (cur < items.length-1) {
-      setCur(c=>c+1)
+    if (items[cur].same === val) okRef.current += 1
+    if (cur < items.length - 1) {
+      setCur(c => c + 1)
     } else {
       // 0.4 за каждую правильную пару — точно как в оригинале
-      onAnswer(Math.round(nc * 0.4 * 100) / 100)
+      onAnswer(Math.round(okRef.current * 0.4 * 100) / 100)
     }
   }
   const item = items[cur]
@@ -513,7 +520,16 @@ function Q11({ onAnswer, isAuth }: { onAnswer: (p: number, extra?: object) => vo
     if (!answer)    e.answer = 'Введите фразу'
     if (!firstName) e.first  = 'Введите имя'
     if (!lastName)  e.last   = 'Введите фамилию'
-    if (!isAuth && !email) e.email = 'Введите email'
+    if (!isAuth) {
+      if (!email) {
+        e.email = 'Введите email'
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        e.email = 'Введите корректный email'
+      }
+      if (phone && !/^[\d\s+()\-]{7,20}$/.test(phone)) {
+        e.phone = 'Введите корректный номер'
+      }
+    }
     if (!consent)   e.consent = 'Необходимо согласие'
     if (Object.keys(e).length) { setErr(e); return }
     const v = answer.trim().toLowerCase()
@@ -556,7 +572,11 @@ function Q11({ onAnswer, isAuth }: { onAnswer: (p: number, extra?: object) => vo
               </div>
               <div>
                 <FieldLabel>Телефон</FieldLabel>
-                <DInput value={phone} onChange={setPhone} placeholder="+7 (___) ___-__-__" />
+                <DInput value={phone} onChange={v => {
+                  const digits = v.replace(/\D/g, '')
+                  setPhone(digits ? '+' + digits : '')
+                }} placeholder="+7 (___) ___-__-__" hasError={!!err.phone} />
+                <ErrMsg msg={err.phone||''} />
               </div>
             </>
           )}
@@ -604,25 +624,49 @@ export default function TestPage() {
   const [loading, setLoading] = useState(false)
   const [confirm, setConfirm] = useState<'restart'|'finish'|null>(null)
 
+  // useRef — чтобы submit всегда читал свежие значения (stale closure fix)
+  const testRef    = useRef<Test|null>(null)
+  const curQRef    = useRef(0)
+  const loadingRef = useRef(false)
+
+  const initializingRef = useRef(false)
+
   const initTest = useCallback(() => {
+    if (initializingRef.current) return   // защита от двойного вызова (StrictMode / React 18)
+    initializingRef.current = true
     setTest(null); setCurQ(0); setStarted(false)
-    ;(token ? testsApi.start() : testsApi.startGuest()).then(r => setTest(r.data as Test))
+    testRef.current = null; curQRef.current = 0
+    ;(token ? testsApi.start() : testsApi.startGuest()).then(r => {
+      const t = r.data as Test
+      setTest(t); testRef.current = t
+    }).finally(() => { initializingRef.current = false })
   }, [token])
 
   useEffect(() => { initTest() }, [])
 
   const submit = useCallback(async (point: number, extra?: object) => {
-    if (!test||loading) return
-    const q = QUESTIONS[curQ]; const isLast = curQ===QUESTIONS.length-1
-    setLoading(true)
+    const t  = testRef.current
+    const cq = curQRef.current
+    if (!t || loadingRef.current) return
+    const q      = QUESTIONS[cq]
+    const isLast = cq === QUESTIONS.length - 1
+    loadingRef.current = true; setLoading(true)
+    const nq = isLast ? 12 : q.id + 1
+    console.warn(`[SUBMIT] curQRef=${cq} q.id=${q.id} isLast=${isLast} next_question=${nq}`)
     try {
-      await testsApi.answer(test.hash, {
+      await testsApi.answer(t.hash, {
         current_question: q.id, answer: String(point), point,
-        next_question: isLast ? 12 : q.id+1, ...(extra||{})
+        next_question: nq, ...(extra || {})
       })
-      if (isLast) navigate(`/report/${test.hash}`); else setCurQ(c=>c+1)
-    } catch(e) { console.error(e) } finally { setLoading(false) }
-  }, [test, curQ, loading, navigate])
+      if (isLast) {
+        navigate(`/report/${t.hash}`)
+      } else {
+        curQRef.current = cq + 1
+        setCurQ(cq + 1)
+      }
+    } catch(e) { console.error(e) }
+    finally { loadingRef.current = false; setLoading(false) }
+  }, [navigate])
 
   if (!test) return (
     <div className="min-h-[60vh] flex items-center justify-center">
