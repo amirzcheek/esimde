@@ -424,15 +424,15 @@ function Q9({ onAnswer }: { onAnswer: (p: number) => void }) {
       </div>
       {/* Три колонки: буквы | кнопки | буквы — как в оригинале */}
       <div className="grid grid-cols-3 items-center gap-4 mb-4">
-        <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 text-center">
-          <span className="font-bold text-gray-900 text-lg sm:text-2xl tracking-widest break-all">{item.a}</span>
+        <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 flex items-center justify-center" style={{minHeight: '100px'}}>
+          <span className="font-bold text-gray-900 text-xl tracking-widest font-mono whitespace-nowrap">{item.a}</span>
         </div>
         <div className="flex flex-col items-center gap-2">
           <button onClick={() => choose(true)}  className="w-full py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-semibold text-xs sm:text-sm transition-all active:scale-95">✓ Одинаковые</button>
           <button onClick={() => choose(false)} className="w-full py-2.5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-semibold text-xs sm:text-sm transition-all active:scale-95">✗ Разные</button>
         </div>
-        <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 text-center">
-          <span className="font-bold text-gray-900 text-lg sm:text-2xl tracking-widest break-all">{item.b}</span>
+        <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 flex items-center justify-center" style={{minHeight: '100px'}}>
+          <span className="font-bold text-gray-900 text-xl tracking-widest font-mono whitespace-nowrap">{item.b}</span>
         </div>
       </div>
     </Card>
