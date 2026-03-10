@@ -573,7 +573,7 @@ function Q11({ onAnswer, isAuth }: { onAnswer: (p: number, extra?: object) => vo
               <div>
                 <FieldLabel>Телефон</FieldLabel>
                 <DInput value={phone} onChange={v => {
-                  const digits = v.replace(/\D/g, '')
+                  const digits = v.replace(/\D/g, '').slice(0, 11)
                   setPhone(digits ? '+' + digits : '')
                 }} placeholder="+7 (___) ___-__-__" hasError={!!err.phone} />
                 <ErrMsg msg={err.phone||''} />
