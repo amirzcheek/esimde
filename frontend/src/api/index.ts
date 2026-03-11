@@ -105,6 +105,7 @@ export const usersApi = {
 export const patientsApi = {
   list: () => api.get('/patients'),
   get:  (id: number) => api.get(`/patients/${id}`),
+  updatePreliminary: (id: number, text: string) => api.patch(`/patients/${id}/preliminary-conclusion`, { preliminary_conclusion: text }),
 }
 
 // ─── Conclusions ───────────────────────────────────────────────────────────

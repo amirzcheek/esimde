@@ -168,6 +168,24 @@ async def get_my_profile(
     }
 
 
+
+
+@router.patch("/patients/{patient_id}/preliminary-conclusion")
+async def update_patient_preliminary_conclusion(
+    patient_id: int,
+    body: dict,
+    current_user: User = Depends(get_current_doctor),
+    db: AsyncSession = Depends(get_db),
+):
+    from sqlalchemy import select as sa_select
+    result = await db.execute(sa_select(User).where(User.id == patient_id))
+    patient = result.scalar_one_or_none()
+    if not patient:
+        raise HTTPException(status_code=404, detail="Пациент не найден")
+    patient.preliminary_conclusion = body.get("preliminary_conclusion", "")
+    await db.commit()
+    return {"ok": True}
+
 @router.patch("/users/me", response_model=dict)
 async def update_my_profile(
     body: UserProfileUpdate,

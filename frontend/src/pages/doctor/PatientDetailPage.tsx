@@ -7,6 +7,63 @@ import type { PatientDetail } from '@/types'
 import { FileText, ChevronDown, ChevronUp, Edit2, Check, X, Download } from 'lucide-react'
 import { toast } from 'sonner'
 
+
+// ─── Редактор предварительного заключения ────────────────────────────────────
+function PreliminaryEditor({ patientId, initial }: { patientId: number; initial: string }) {
+  const [editing, setEditing] = useState(false)
+  const [text, setText]       = useState(initial)
+  const [saving, setSaving]   = useState(false)
+
+  const save = async () => {
+    setSaving(true)
+    try {
+      await patientsApi.updatePreliminary(patientId, text)
+      toast.success('Заключение сохранено')
+      setEditing(false)
+    } catch {
+      toast.error('Ошибка сохранения')
+    } finally { setSaving(false) }
+  }
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-xs font-semibold text-gray-500">Предварительное заключение</p>
+        {!editing && (
+          <button onClick={() => setEditing(true)}
+            className="flex items-center gap-1 text-xs text-cyan-500 hover:text-cyan-600 transition">
+            <Edit2 size={12}/> {text ? 'Редактировать' : 'Добавить'}
+          </button>
+        )}
+      </div>
+      {editing ? (
+        <div className="space-y-2">
+          <textarea
+            value={text} onChange={e => setText(e.target.value)}
+            rows={4} placeholder="Введите предварительное заключение..."
+            className="w-full px-4 py-3 rounded-2xl border-2 border-gray-200 bg-gray-50 text-sm outline-none focus:border-cyan-400 focus:bg-white transition resize-none"
+          />
+          <div className="flex gap-2">
+            <button onClick={save} disabled={saving}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-white text-xs font-semibold transition hover:opacity-90 disabled:opacity-50"
+              style={{background:'linear-gradient(135deg,#06b6d4,#3b82f6)'}}>
+              <Check size={12}/> {saving ? 'Сохранение...' : 'Сохранить'}
+            </button>
+            <button onClick={() => { setEditing(false); setText(initial) }}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl border-2 border-gray-200 text-gray-600 text-xs font-semibold hover:bg-gray-50 transition">
+              <X size={12}/> Отмена
+            </button>
+          </div>
+        </div>
+      ) : text ? (
+        <p className="text-sm text-gray-800 whitespace-pre-wrap leading-relaxed">{text}</p>
+      ) : (
+        <p className="text-sm text-gray-400 italic">Не заполнено</p>
+      )}
+    </div>
+  )
+}
+
 export default function PatientDetailPage() {
   const { id } = useParams<{ id: string }>()
   const qc = useQueryClient()
@@ -77,12 +134,9 @@ export default function PatientDetailPage() {
             </div>
           ))}
         </div>
-        {patient.preliminary_conclusion && (
-          <div className="mt-4 pt-4 border-t">
-            <p className="text-xs font-medium text-gray-500 mb-1">Предварительное заключение (ИИ)</p>
-            <p className="text-sm text-gray-800 whitespace-pre-wrap">{patient.preliminary_conclusion}</p>
-          </div>
-        )}
+        <div className="mt-4 pt-4 border-t">
+          <PreliminaryEditor patientId={patient.id} initial={patient.preliminary_conclusion || ''} />
+        </div>
       </div>
 
       {/* Appointments */}
