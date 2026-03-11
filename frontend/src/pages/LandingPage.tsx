@@ -1,3 +1,4 @@
+import { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 const PlayIcon = () => (
@@ -45,6 +46,50 @@ function BtnSolid({ to, children }: { to: string; children: React.ReactNode }) {
         <PlayIcon />
       </div>
     </Link>
+  )
+}
+
+function VideoPlayer() {
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const [playing, setPlaying] = useState(false)
+
+  const toggle = () => {
+    if (!videoRef.current) return
+    if (playing) { videoRef.current.pause(); setPlaying(false) }
+    else { videoRef.current.play(); setPlaying(true) }
+  }
+
+  return (
+    <div
+      className="relative w-full rounded-3xl overflow-hidden shadow-2xl bg-gray-900 cursor-pointer"
+      style={{ aspectRatio: '16/9' }}
+      onClick={toggle}
+    >
+      <video
+        ref={videoRef}
+        className="w-full h-full object-cover"
+        preload="metadata"
+        onEnded={() => setPlaying(false)}
+      >
+        <source src="/videos/video.mp4" type="video/mp4" />
+      </video>
+
+      {/* Оверлей с кнопкой play */}
+      <div
+        className={`absolute inset-0 flex flex-col items-center justify-center transition-opacity duration-300 ${playing ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+        style={{ background: 'linear-gradient(to bottom, rgba(15,23,42,0.2), rgba(15,23,42,0.65))' }}
+      >
+        <div
+          className="w-20 h-20 rounded-full flex items-center justify-center shadow-2xl transition-transform duration-200 hover:scale-110"
+          style={{ background: 'linear-gradient(135deg, #06b6d4, #3b82f6)' }}
+        >
+          <svg className="w-8 h-8 text-white ml-1" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M8 5.14v14l11-7-11-7z"/>
+          </svg>
+        </div>
+        <span className="mt-4 text-white font-semibold text-sm tracking-wide drop-shadow">Смотреть видео</span>
+      </div>
+    </div>
   )
 }
 
@@ -135,17 +180,7 @@ export default function LandingPage() {
       {/* VIDEO */}
       <section className="w-full py-10 lg:py-16">
         <div className="container mx-auto max-w-4xl px-4">
-          <div className="relative w-full rounded-3xl overflow-hidden bg-gray-900 shadow-2xl" style={{aspectRatio:'16/9'}}>
-            <video
-              className="w-full h-full object-cover"
-              controls
-              preload="metadata"
-              poster="/videos/poster.jpg"
-            >
-              <source src="/videos/video.mp4" type="video/mp4" />
-              Ваш браузер не поддерживает видео.
-            </video>
-          </div>
+          <VideoPlayer />
         </div>
       </section>
     </div>
