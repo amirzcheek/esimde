@@ -52,16 +52,24 @@ export default function PatientsPage() {
                   {p.phone && <span className="text-xs text-gray-400">{formatPhone(p.phone)}</span>}
                 </div>
               </div>
-              {p.last_test_score !== null && (
-                <div className="text-right flex-shrink-0">
-                  <div className="flex items-center gap-1 text-xs text-gray-500 mb-0.5">
-                    <FlaskConical size={11} /> Тест
+              <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+                {p.last_test_score !== null && (
+                  <div className="text-right">
+                    <div className="flex items-center gap-1 text-xs text-gray-500 mb-0.5">
+                      <FlaskConical size={11} /> Тест
+                    </div>
+                    <span className={`font-mono text-sm font-bold ${getScoreColor(p.last_test_score)}`}>
+                      {p.last_test_score.toFixed(0)}%
+                    </span>
                   </div>
-                  <span className={`font-mono text-sm font-bold ${getScoreColor(p.last_test_score)}`}>
-                    {p.last_test_score.toFixed(0)}%
-                  </span>
-                </div>
-              )}
+                )}
+                {(p as any).has_test && !(p as any).has_conclusion && (
+                  <div className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200">
+                    <AlertCircle size={11} />
+                    Заполнить заключение
+                  </div>
+                )}
+              </div>
               <ChevronRight size={16} className="text-gray-300 group-hover:text-gray-500 transition" />
             </Link>
           ))}

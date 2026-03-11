@@ -2,7 +2,6 @@ from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_
 from sqlalchemy.orm import selectinload
-from sqlalchemy.exc import IntegrityError
 from typing import Optional
 from datetime import date, datetime, timezone
 import os, uuid, shutil
@@ -405,6 +404,8 @@ async def list_patients(
             "phone": p.normalized_phone,
             "avatar_path": p.avatar_path,
             "last_test_score": tests_by_user[p.id].neurocognitive_score if p.id in tests_by_user else None,
+            "has_test": p.id in tests_by_user,
+            "has_conclusion": bool(p.preliminary_conclusion),
         }
         for p in patients
     ]

@@ -177,7 +177,7 @@ async def save_answer(
                 )
             _user_res = await db.execute(_select(_User).where(_User.id == test.user_id))
             _user = _user_res.scalar_one_or_none()
-            if _user and not _user.preliminary_conclusion:
+            if _user:
                 _user.preliminary_conclusion = conclusion
 
         if test.user_id:
