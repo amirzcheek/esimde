@@ -117,7 +117,7 @@ function Q1({ onAnswer }: { onAnswer: (p: number) => void }) {
         </div>
         <div>
           <FieldLabel>Год</FieldLabel>
-          <DInput value={year} onChange={v => { const n = v.replace(/\D/g,''); const y = parseInt(n); if (n===''||(n.length<=4&&y>=1900&&y<=new Date().getFullYear())) setYear(n) }} placeholder="2025" type="number" hasError={!!err&&!year} />
+          <DInput value={year} onChange={v => { const n = v.replace(/\D/g,'').slice(0,4); setYear(n) }} placeholder="2025" type="number" hasError={!!err&&!year} />
         </div>
       </div>
       <ErrMsg msg={err} />
