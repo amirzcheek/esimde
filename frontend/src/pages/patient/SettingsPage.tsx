@@ -58,7 +58,7 @@ export default function SettingsPage() {
       try { const me = await authApi.me(); setUser(me.data as any) } catch {}
       toast.success('Профиль обновлён')
     },
-    onError: () => toast.error('Ошибка при сохранении'),
+    onError: (e: any) => toast.error(e?.response?.data?.detail || 'Ошибка при сохранении'),
   })
 
   // Загрузка аватара
@@ -193,8 +193,24 @@ export default function SettingsPage() {
 
           {field('birth_date',  'Дата рождения', 'date')}
           <div className="grid grid-cols-2 gap-3">
-            {field('height', 'Рост (см)', 'text', '175')}
-            {field('weight', 'Вес (кг)',  'text', '70')}
+            <div key="height">
+              <label className="block text-xs font-medium text-gray-600 mb-1.5">Рост (см)</label>
+              <input
+                type="text" inputMode="numeric"
+                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-blue-50 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-300"
+                value={form.height} placeholder="175"
+                onChange={e => { const v = e.target.value.replace(/\D/g,''); if (v===''||parseInt(v)<=300) setForm(f=>({...f,height:v})) }}
+              />
+            </div>
+            <div key="weight">
+              <label className="block text-xs font-medium text-gray-600 mb-1.5">Вес (кг)</label>
+              <input
+                type="text" inputMode="numeric"
+                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-blue-50 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-300"
+                value={form.weight} placeholder="70"
+                onChange={e => { const v = e.target.value.replace(/\D/g,''); if (v===''||parseInt(v)<=500) setForm(f=>({...f,weight:v})) }}
+              />
+            </div>
           </div>
           <button
             onClick={() => profileMutation.mutate()}

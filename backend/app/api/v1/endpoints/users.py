@@ -194,8 +194,16 @@ async def update_my_profile(
         "weight": current_user.weight,
     }
     await audit_service.log_profile_update(db, current_user.id, old, new, request=request)
-    await db.commit()
-    await db.refresh(current_user)
+    try:
+        await db.commit()
+        await db.refresh(current_user)
+    except IntegrityError as e:
+        await db.rollback()
+        if "ix_users_phone" in str(e):
+            raise HTTPException(status_code=400, detail="Этот номер телефона уже используется другим аккаунтом")
+        if "ix_users_email" in str(e):
+            raise HTTPException(status_code=400, detail="Этот email уже используется другим аккаунтом")
+        raise HTTPException(status_code=400, detail="Ошибка сохранения данных")
     return {"message": "Профиль обновлён"}
 
 
