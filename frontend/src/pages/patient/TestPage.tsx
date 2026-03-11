@@ -423,18 +423,16 @@ function Q9({ onAnswer }: { onAnswer: (p: number) => void }) {
         </div>
         <span className="text-xs text-gray-400">{pct}%</span>
       </div>
-      <div className="flex flex-col gap-3 mb-4">
-        <div className="grid grid-cols-2 gap-3">
-          <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 flex items-center justify-center min-h-16">
-            <span className="font-bold text-gray-900 font-mono text-center leading-snug text-sm sm:text-xl tracking-widest">{item.a}</span>
-          </div>
-          <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 flex items-center justify-center min-h-16">
-            <span className="font-bold text-gray-900 font-mono text-center leading-snug text-sm sm:text-xl tracking-widest">{item.b}</span>
-          </div>
+      <div className="flex items-center gap-4 mb-4">
+        <div className="flex-1 bg-gray-50 border border-gray-200 rounded-2xl p-4 flex items-center justify-center min-h-24">
+          <span className="font-bold text-gray-900 font-mono text-center leading-snug text-sm sm:text-xl tracking-widest">{item.a}</span>
         </div>
-        <div className="flex justify-center gap-3">
-          <button onClick={() => choose(true)}  className="flex-1 max-w-[200px] py-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-semibold text-sm transition-all active:scale-95">✓ Одинаковые</button>
-          <button onClick={() => choose(false)} className="flex-1 max-w-[200px] py-3 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-semibold text-sm transition-all active:scale-95">✗ Разные</button>
+        <div className="flex flex-col gap-2 shrink-0">
+          <button onClick={() => choose(true)}  className="w-32 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-semibold text-sm transition-all active:scale-95">Одинаковые</button>
+          <button onClick={() => choose(false)} className="w-32 py-3 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-semibold text-sm transition-all active:scale-95">Разные</button>
+        </div>
+        <div className="flex-1 bg-gray-50 border border-gray-200 rounded-2xl p-4 flex items-center justify-center min-h-24">
+          <span className="font-bold text-gray-900 font-mono text-center leading-snug text-sm sm:text-xl tracking-widest">{item.b}</span>
         </div>
       </div>
     </Card>
