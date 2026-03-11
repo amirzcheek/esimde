@@ -65,7 +65,7 @@ export default function PatientsPage() {
                 )}
                 {(p as any).has_test && !(p as any).has_conclusion && (
                   <div className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200">
-                    <AlertCircle size={11} />
+                    <AlertTriangle size={11} />
                     Заполнить заключение
                   </div>
                 )}
