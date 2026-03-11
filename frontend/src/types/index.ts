@@ -12,6 +12,9 @@ export interface UserShort {
   age: number | null
   height: string | null
   weight: string | null
+  chronic_diseases: string | null
+  medication_allergies: string | null
+  medical_history: string | null
 }
 
 export interface TokenResponse {
@@ -39,6 +42,9 @@ export interface Me {
   age: number | null
   height: string | null
   weight: string | null
+  chronic_diseases: string | null
+  medication_allergies: string | null
+  medical_history: string | null
 }
 
 export interface Doctor {
