@@ -2,8 +2,8 @@ import uuid
 from sqlalchemy import (
     Column, Integer, String, Boolean, Date, Time, Text,
     DateTime, ForeignKey, Enum, JSON, SmallInteger, UniqueConstraint, Index
-from sqlalchemy.ext.mutable import MutableDict
 )
+from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from sqlalchemy.dialects.postgresql import UUID
