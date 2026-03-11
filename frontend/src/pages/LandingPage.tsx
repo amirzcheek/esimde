@@ -132,42 +132,19 @@ export default function LandingPage() {
         <BtnSolid to="/test">Пройти тест</BtnSolid>
       </section>
 
-      {/* WHO MADE IT */}
-      <section className="w-full relative py-8 lg:py-12">
-        <div className="container flex flex-col lg:flex-row items-center mx-auto max-w-7xl">
-          {/* Video */}
-          <div className="w-full lg:w-1/2 flex flex-col items-start px-4">
-            <div className="bg-gray-800 w-full h-[250px] sm:h-[400px] flex justify-center items-center overflow-hidden rounded-4xl max-lg:mb-5 relative">
-              <button className="group flex flex-col items-center font-semibold text-white hover:text-white/85 cursor-pointer relative z-10 transition-all duration-300">
-                <div className="bg-white w-20 h-20 flex items-center justify-center rounded-full mb-3">
-                  <svg className="size-12 text-blue-400 group-hover:text-blue-500 transition-all" viewBox="0 0 24 24" fill="currentColor">
-                    <path fillRule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm14.024-.983a1.125 1.125 0 0 1 0 1.966l-5.603 3.113A1.125 1.125 0 0 1 9 15.113V8.887c0-.857.921-1.4 1.671-.983l5.603 3.113Z" clipRule="evenodd"/>
-                  </svg>
-                </div>
-                Смотреть видео
-              </button>
-            </div>
-          </div>
-
-          {/* Text */}
-          <div className="w-full lg:w-1/2 flex flex-col items-start pl-4 lg:pl-12 pr-4">
-            <h2 className="font-extrabold text-gray-700 text-2xl xs:text-3xl xl:text-4xl 2xl:text-5xl mb-3 xl:mb-6">
-              Кем был разработан тест
-            </h2>
-            <p className="text-gray-500 text-left leading-relaxed mb-6">
-              Разработан командой iDala (Galamat Group) при участии специалистов Universal
-              Brain Center — центра по лечению неврозов и деменции. Проект сопровождали
-              клиницисты и исследователи в области психиатрии и неврологии.
-            </p>
-            <div className="flex flex-row items-center space-x-6 flex-wrap gap-4">
-              <BtnSolid to="/test">Пройти тест</BtnSolid>
-              <div className="flex items-center font-light text-gray-500 gap-2">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-                ≈ 6-7 минут
-              </div>
-            </div>
+      {/* VIDEO */}
+      <section className="w-full py-10 lg:py-16">
+        <div className="container mx-auto max-w-4xl px-4">
+          <div className="relative w-full rounded-3xl overflow-hidden bg-gray-900 shadow-2xl" style={{aspectRatio:'16/9'}}>
+            <video
+              className="w-full h-full object-cover"
+              controls
+              preload="metadata"
+              poster="/videos/poster.jpg"
+            >
+              <source src="/videos/video.mp4" type="video/mp4" />
+              Ваш браузер не поддерживает видео.
+            </video>
           </div>
         </div>
       </section>
