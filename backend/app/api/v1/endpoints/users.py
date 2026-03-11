@@ -393,7 +393,7 @@ async def list_patients(
         select(Appointment).where(
             Appointment.doctor_id == current_user.id,
             Appointment.patient_id.in_(patient_ids),
-            Appointment.status == "completed"
+            Appointment.status.in_(["completed", "COMPLETED"])
         )
     )
     completed_appts = completed_appts_result.scalars().all()

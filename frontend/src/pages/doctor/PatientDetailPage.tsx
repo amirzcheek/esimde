@@ -134,7 +134,20 @@ export default function PatientDetailPage() {
             </div>
           ))}
         </div>
-        <div className="mt-4 pt-4 border-t">
+        <div className="mt-4 pt-4 border-t space-y-4">
+          {/* Статус теста */}
+          <div>
+            <p className="text-xs font-medium text-gray-500 mb-1">Результат нейрокогнитивного теста</p>
+            {last_test ? (
+              <div className="flex items-center gap-2">
+                <span className={`text-sm font-semibold ${getScoreColor(last_test.score)}`}>{last_test.score.toFixed(1)}%</span>
+                <span className="text-xs text-gray-400">{getScoreLabel(last_test.score)}</span>
+              </div>
+            ) : (
+              <p className="text-sm text-amber-600 font-medium">⚠ Тест не пройден</p>
+            )}
+          </div>
+          {/* Предварительное заключение */}
           <PreliminaryEditor patientId={patient.id} initial={patient.preliminary_conclusion || ''} />
         </div>
       </div>
