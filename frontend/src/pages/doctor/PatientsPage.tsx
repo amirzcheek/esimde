@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 import { patientsApi } from '@/api'
 import { formatPhone, getScoreColor } from '@/lib/utils'
 import type { Patient } from '@/types'
-import { Search, ChevronRight, FlaskConical } from 'lucide-react'
+import { Search, ChevronRight, FlaskConical, AlertTriangle } from 'lucide-react'
 
 export default function PatientsPage() {
   const [search, setSearch] = useState('')
