@@ -132,6 +132,7 @@ async def save_answer(
                 user.middle_name = body.middle_name
 
     # Сохраняем ответ в payload
+    import logging; logging.warning(f"[ANSWER] hash={hash} q={body.current_question} next={body.next_question} point={body.point}")
     payload = test.payload or {}
     payload[str(body.current_question)] = {
         "answer": body.answer,
@@ -142,8 +143,43 @@ async def save_answer(
     # Завершение теста (next_question == 12 означает что пройдены все 11 вопросов)
     if body.next_question >= 12:
         from datetime import datetime, timezone
+        from sqlalchemy import select as _select
+        from app.models.user import User as _User
         test.completed_at = datetime.now(timezone.utc)
         await db.flush()
+
+        # Генерируем предварительное заключение по шаблону
+        if test.user_id:
+            score = test.neurocognitive_score or 0
+            if score >= 85:
+                conclusion = (
+                    f"По результатам нейрокогнитивного теста набрано {score:.1f}%. "
+                    "Когнитивные функции в норме. Выраженных нарушений памяти, внимания и ориентации не выявлено. "
+                    "Рекомендуется профилактическое наблюдение раз в год."
+                )
+            elif score >= 60:
+                conclusion = (
+                    f"По результатам нейрокогнитивного теста набрано {score:.1f}%. "
+                    "Выявлены лёгкие когнитивные нарушения. Возможны незначительные снижения памяти и концентрации внимания. "
+                    "Рекомендуется консультация невролога и повторное тестирование через 6 месяцев."
+                )
+            elif score >= 40:
+                conclusion = (
+                    f"По результатам нейрокогнитивного теста набрано {score:.1f}%. "
+                    "Выявлены умеренные когнитивные нарушения. Отмечается снижение памяти, внимания и ориентации. "
+                    "Настоятельно рекомендуется очная консультация невролога или психиатра."
+                )
+            else:
+                conclusion = (
+                    f"По результатам нейрокогнитивного теста набрано {score:.1f}%. "
+                    "Выявлены выраженные когнитивные нарушения. Значительное снижение памяти, внимания и когнитивных функций. "
+                    "Требуется срочная консультация специалиста и комплексное обследование."
+                )
+            _user_res = await db.execute(_select(_User).where(_User.id == test.user_id))
+            _user = _user_res.scalar_one_or_none()
+            if _user and not _user.preliminary_conclusion:
+                _user.preliminary_conclusion = conclusion
+
         if test.user_id:
             await audit_service.log_test_complete(
                 db, test.user_id, test.id, test.neurocognitive_score, request=request
