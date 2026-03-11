@@ -407,7 +407,11 @@ async def list_patients(
             Conclusion.appointment_id.in_(list(appt_ids_with_patients.keys()))
         )
     )
-    concluded_appt_ids = set(c.appointment_id for c in conclusions_result.scalars().all())
+    # Считаем заполненным только если есть хотя бы одно непустое поле
+    concluded_appt_ids = set(
+        c.appointment_id for c in conclusions_result.scalars().all()
+        if any([c.complaints, c.diagnosis, c.medications, c.diet_recommendations, c.examination_recommendations])
+    )
     # Пациенты у которых все завершённые приёмы имеют заключения
     patients_with_all_concluded = set()
     for pid in completed_patient_ids:
