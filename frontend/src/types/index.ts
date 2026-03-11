@@ -67,6 +67,8 @@ export interface Patient {
   phone: string | null
   avatar_path: string | null
   last_test_score: number | null
+  has_test: boolean
+  has_conclusion: boolean
 }
 
 export interface Test {
