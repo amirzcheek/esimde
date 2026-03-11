@@ -48,10 +48,13 @@ export default function AppHeader() {
   ] : isPatient ? [
     { to: '/dashboard',   label: 'Профиль' },
     { to: '/appointment', label: 'Запись' },
+    { to: '/news',        label: 'Новости' },
   ] : isAdmin ? [
     { to: '/admin/audit', label: 'Аудит' },
+    { to: '/news',        label: 'Новости' },
   ] : [
     { to: '/#about',    label: 'О нас' },
+    { to: '/news',      label: 'Новости' },
     { to: '/#contacts', label: 'Контакты' },
   ]
 

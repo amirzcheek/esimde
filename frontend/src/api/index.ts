@@ -142,3 +142,13 @@ export const auditApi = {
   stats: () => api.get('/admin/stats'),
   users: (params?: any) => api.get('/admin/users', { params }),
 }
+
+// ─── News ──────────────────────────────────────────────────────────────────
+export const newsApi = {
+  list:        (page = 1, per_page = 10) => api.get('/news', { params: { page, per_page } }),
+  get:         (id: number) => api.get(`/news/${id}`),
+  adminList:   () => api.get('/news/admin/all'),
+  create:      (data: FormData) => api.post('/news', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  update:      (id: number, data: FormData) => api.patch(`/news/${id}`, data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  delete:      (id: number) => api.delete(`/news/${id}`),
+}

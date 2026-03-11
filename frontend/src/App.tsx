@@ -21,6 +21,7 @@ import PatientDetailPage  from '@/pages/doctor/PatientDetailPage'
 import SchedulePage       from '@/pages/doctor/SchedulePage'
 import DoctorProfilePage  from '@/pages/doctor/DoctorProfilePage'
 import AdminPage          from '@/pages/admin/AdminPage'
+import NewsPage           from '@/pages/patient/NewsPage'
 
 const qc = new QueryClient({ defaultOptions: { queries: { retry: 1, staleTime: 30_000 } } })
 
@@ -36,6 +37,7 @@ export default function App() {
             <Route path="/test"         element={<TestInfoPage />} />
             <Route path="/test/go"      element={<TestPage />} />
             <Route path="/report/:hash" element={<ReportPage />} />
+            <Route path="/news"          element={<NewsPage />} />
           </Route>
 
           {/* Auth */}

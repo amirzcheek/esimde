@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { auditApi } from '@/api'
+import { auditApi, newsApi } from '@/api'
 
 // ─── Типы ────────────────────────────────────────────────────────────────────
 interface Stats {
@@ -321,7 +321,141 @@ function Spinner() {
 }
 
 // ─── Главная страница ─────────────────────────────────────────────────────────
-type Tab = 'stats' | 'logs' | 'users'
+
+// ─── Новости ──────────────────────────────────────────────────────────────────
+interface NewsItem { id: number; title: string; content: string; image_path: string | null; is_published: boolean; created_at: string }
+
+function NewsTab() {
+  const [news, setNews]       = useState<NewsItem[]>([])
+  const [loading, setLoading] = useState(true)
+  const [editing, setEditing] = useState<NewsItem | null>(null)
+  const [showForm, setShowForm] = useState(false)
+  const [form, setForm]       = useState({ title: '', content: '', is_published: true })
+  const [image, setImage]     = useState<File | null>(null)
+  const [saving, setSaving]   = useState(false)
+
+  const load = () => {
+    setLoading(true)
+    newsApi.adminList().then(r => setNews(r.data)).finally(() => setLoading(false))
+  }
+  useEffect(() => { load() }, [])
+
+  const openCreate = () => { setEditing(null); setForm({ title: '', content: '', is_published: true }); setImage(null); setShowForm(true) }
+  const openEdit   = (n: NewsItem) => { setEditing(n); setForm({ title: n.title, content: n.content, is_published: n.is_published }); setImage(null); setShowForm(true) }
+  const closeForm  = () => { setShowForm(false); setEditing(null) }
+
+  const save = async () => {
+    if (!form.title.trim() || !form.content.trim()) return
+    setSaving(true)
+    try {
+      const fd = new FormData()
+      fd.append('title', form.title)
+      fd.append('content', form.content)
+      fd.append('is_published', String(form.is_published))
+      if (image) fd.append('image', image)
+      if (editing) await newsApi.update(editing.id, fd)
+      else await newsApi.create(fd)
+      closeForm(); load()
+    } finally { setSaving(false) }
+  }
+
+  const del = async (id: number) => {
+    if (!confirm('Удалить новость?')) return
+    await newsApi.delete(id); load()
+  }
+
+  if (loading) return <Spinner />
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-gray-500">Всего: {news.length}</p>
+        <button onClick={openCreate}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl text-white text-sm font-semibold transition hover:opacity-90"
+          style={{ background: GRAD }}>
+          + Добавить новость
+        </button>
+      </div>
+
+      {news.length === 0 ? (
+        <div className="text-center py-16 text-gray-400">📰 Новостей нет</div>
+      ) : (
+        <div className="space-y-3">
+          {news.map(n => (
+            <div key={n.id} className="bg-white border border-gray-200 rounded-2xl p-4 flex items-start gap-4">
+              {n.image_path && (
+                <img src={`/uploads/${n.image_path}`} alt="" className="w-16 h-16 object-cover rounded-xl flex-shrink-0" />
+              )}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${n.is_published ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-500'}`}>
+                    {n.is_published ? 'Опубликовано' : 'Скрыто'}
+                  </span>
+                  <span className="text-xs text-gray-400">{new Date(n.created_at).toLocaleDateString('ru-RU')}</span>
+                </div>
+                <p className="font-semibold text-gray-900 text-sm truncate">{n.title}</p>
+                <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{n.content}</p>
+              </div>
+              <div className="flex gap-2 flex-shrink-0">
+                <button onClick={() => openEdit(n)} className="px-3 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-600 hover:bg-gray-50 transition">Изменить</button>
+                <button onClick={() => del(n.id)} className="px-3 py-1.5 rounded-lg border border-red-100 text-xs text-red-500 hover:bg-red-50 transition">Удалить</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Форма создания/редактирования */}
+      {showForm && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={closeForm}>
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="p-6 space-y-4">
+              <h3 className="font-bold text-gray-900 text-lg">{editing ? 'Редактировать новость' : 'Новая новость'}</h3>
+
+              <div>
+                <label className="text-xs font-semibold text-gray-500 mb-1.5 block">Заголовок *</label>
+                <input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
+                  placeholder="Заголовок новости"
+                  className="w-full px-4 py-3 rounded-2xl border-2 border-gray-200 bg-gray-50 text-sm outline-none focus:border-cyan-400 focus:bg-white transition" />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-gray-500 mb-1.5 block">Текст *</label>
+                <textarea value={form.content} onChange={e => setForm(f => ({ ...f, content: e.target.value }))}
+                  placeholder="Текст новости..."
+                  rows={6}
+                  className="w-full px-4 py-3 rounded-2xl border-2 border-gray-200 bg-gray-50 text-sm outline-none focus:border-cyan-400 focus:bg-white transition resize-none" />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-gray-500 mb-1.5 block">Изображение</label>
+                <input type="file" accept="image/*" onChange={e => setImage(e.target.files?.[0] || null)}
+                  className="w-full text-sm text-gray-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-gray-100 file:text-gray-700 file:text-xs file:font-semibold hover:file:bg-gray-200" />
+              </div>
+
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" checked={form.is_published} onChange={e => setForm(f => ({ ...f, is_published: e.target.checked }))}
+                  className="w-4 h-4 rounded accent-cyan-500" />
+                <span className="text-sm text-gray-700">Опубликовать сразу</span>
+              </label>
+
+              <div className="flex gap-3 pt-2">
+                <button onClick={closeForm} className="flex-1 py-3 rounded-2xl border-2 border-gray-200 text-gray-600 text-sm font-semibold hover:bg-gray-50 transition">Отмена</button>
+                <button onClick={save} disabled={saving || !form.title || !form.content}
+                  className="flex-1 py-3 rounded-2xl text-white text-sm font-semibold transition hover:opacity-90 disabled:opacity-50"
+                  style={{ background: GRAD }}>
+                  {saving ? 'Сохранение...' : 'Сохранить'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+type Tab = 'stats' | 'logs' | 'users' | 'news'
 
 export default function AdminPage() {
   const [tab, setTab]       = useState<Tab>('stats')
@@ -336,6 +470,7 @@ export default function AdminPage() {
     { id: 'stats', label: 'Статистика',  icon: '📊' },
     { id: 'logs',  label: 'Audit Logs',  icon: '📋' },
     { id: 'users', label: 'Пользователи', icon: '👥' },
+    { id: 'news',  label: 'Новости',       icon: '📰' },
   ]
 
   return (
@@ -366,6 +501,7 @@ export default function AdminPage() {
       {tab === 'stats' && <StatsTab stats={loadingStats ? null : stats} />}
       {tab === 'logs'  && <LogsTab />}
       {tab === 'users' && <UsersTab />}
+      {tab === 'news'  && <NewsTab />}
     </div>
   )
 }

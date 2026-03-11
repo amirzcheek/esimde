@@ -7,7 +7,6 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from sqlalchemy.dialects.postgresql import UUID
 from app.core.database import Base
-from sqlalchemy.ext.mutable import MutableDict
 import enum
 
 
@@ -35,7 +34,7 @@ class Test(Base):
     id = Column(Integer, primary_key=True)
     hash = Column(UUID(as_uuid=True), default=uuid.uuid4, unique=True, index=True, nullable=False)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
-    payload = Column(MutableDict.as_mutable(JSON), nullable=True)
+    payload = Column(JSON, nullable=True)  # {1: {answer: "...", point: 1}, ...}
     completed_at = Column(DateTime(timezone=True), nullable=True)
     deleted_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
@@ -233,3 +232,20 @@ class AuditLog(Base):
         Index("ix_audit_event_created", "event_type", "created_at"),
         Index("ix_audit_created", "created_at"),
     )
+
+
+# ─── News ─────────────────────────────────────────────────────────────────────
+
+class News(Base):
+    __tablename__ = "news"
+
+    id = Column(Integer, primary_key=True)
+    title = Column(String(255), nullable=False)
+    content = Column(Text, nullable=False)
+    image_path = Column(String(500), nullable=True)
+    author_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    is_published = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    author = relationship("User", foreign_keys=[author_id])
