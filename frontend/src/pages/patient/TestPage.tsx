@@ -209,13 +209,14 @@ function Q3({ onAnswer }: { onAnswer: (p: number) => void }) {
 // ─── Q4: Монеты ───────────────────────────────────────────────────────────────
 function Q4({ onAnswer }: { onAnswer: (p: number) => void }) {
   const [coin]  = useState(() => rand([5,10,20]) as number)
-  const [total] = useState(() => rand([5,6,7,8,9]) * rand([5,10,20]) as number)
+  const [count] = useState(() => rand([5,6,7,8,9]) as number)
+  const total   = coin * count
   const [ans, setAns] = useState('')
   const [err, setErr] = useState('')
 
   const submit = () => {
     if (!ans) { setErr('Введите ответ'); return }
-    onAnswer(parseInt(ans)===(total/coin)?1:0)
+    onAnswer(parseInt(ans) === count ? 1 : 0)
   }
 
   return (
@@ -422,17 +423,19 @@ function Q9({ onAnswer }: { onAnswer: (p: number) => void }) {
         </div>
         <span className="text-xs text-gray-400">{pct}%</span>
       </div>
-      {/* Три колонки: буквы | кнопки | буквы — как в оригинале */}
-      <div className="grid grid-cols-3 items-center gap-4 mb-4">
-        <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 flex items-center justify-center" style={{minHeight: '100px'}}>
-          <span className="font-bold text-gray-900 text-xl tracking-widest font-mono whitespace-nowrap">{item.a}</span>
+      {/* Буквы сверху, кнопки снизу на мобиле */}
+      <div className="flex flex-col gap-3 mb-4">
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 flex items-center justify-center min-h-16">
+            <span className="font-bold text-gray-900 font-mono text-center leading-snug text-sm sm:text-xl tracking-widest">{item.a}</span>
+          </div>
+          <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 flex items-center justify-center min-h-16">
+            <span className="font-bold text-gray-900 font-mono text-center leading-snug text-sm sm:text-xl tracking-widest">{item.b}</span>
+          </div>
         </div>
-        <div className="flex flex-col items-center gap-2">
-          <button onClick={() => choose(true)}  className="w-full py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-semibold text-xs sm:text-sm transition-all active:scale-95">✓ Одинаковые</button>
-          <button onClick={() => choose(false)} className="w-full py-2.5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-semibold text-xs sm:text-sm transition-all active:scale-95">✗ Разные</button>
-        </div>
-        <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 flex items-center justify-center" style={{minHeight: '100px'}}>
-          <span className="font-bold text-gray-900 text-xl tracking-widest font-mono whitespace-nowrap">{item.b}</span>
+        <div className="grid grid-cols-2 gap-3">
+          <button onClick={() => choose(true)}  className="py-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-semibold text-sm transition-all active:scale-95">✓ Одинаковые</button>
+          <button onClick={() => choose(false)} className="py-3 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-semibold text-sm transition-all active:scale-95">✗ Разные</button>
         </div>
       </div>
     </Card>
