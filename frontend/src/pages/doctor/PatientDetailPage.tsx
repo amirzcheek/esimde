@@ -104,32 +104,43 @@ export default function PatientDetailPage() {
                   {conclusions.filter(c => c.appointment_id === a.id).map(c => (
                     <div key={c.id}>
                       {editingConclusion === c.id ? (
-                        <div className="space-y-2">
-                          {[['complaints','Жалобы'],['diagnosis','Диагноз'],['medications','Назначения'],['diet_recommendations','Диета'],['examination_recommendations','Обследования']].map(([field,label]) => (
+                        <div className="space-y-3 p-4 bg-white rounded-2xl border border-gray-200">
+                          <p className="text-sm font-semibold text-gray-700 mb-1">Заключение приёма</p>
+                          {[['complaints','🩺 Жалобы'],['diagnosis','📋 Диагноз'],['medications','💊 Назначения'],['diet_recommendations','🥗 Диета'],['examination_recommendations','🔬 Обследования']].map(([field,label]) => (
                             <div key={field}>
-                              <label className="text-xs font-medium text-gray-600">{label}</label>
-                              <textarea className="input mt-1 resize-none" rows={2}
+                              <label className="text-xs font-semibold text-gray-500 mb-1 block">{label}</label>
+                              <textarea
+                                className="w-full px-4 py-3 rounded-2xl border-2 border-gray-200 bg-gray-50 text-sm outline-none focus:border-cyan-400 focus:bg-white transition resize-none"
+                                rows={2}
+                                placeholder="Введите текст..."
                                 value={conclusionForm[field] || ''} onChange={e => setConclusionForm(f => ({...f,[field]:e.target.value}))} />
                             </div>
                           ))}
-                          <div className="flex gap-2 pt-1">
+                          <div className="flex gap-3 pt-1">
                             <button onClick={() => conclusionMutation.mutate({cid:c.id,data:conclusionForm})}
-                              disabled={conclusionMutation.isPending} className="btn-primary text-xs gap-1">
-                              <Check size={12}/> Сохранить
+                              disabled={conclusionMutation.isPending}
+                              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-white text-sm font-semibold transition hover:opacity-90 disabled:opacity-50"
+                              style={{background:'linear-gradient(135deg,#06b6d4,#3b82f6)'}}>
+                              <Check size={14}/> Сохранить
                             </button>
-                            <button onClick={() => setEditingConclusion(null)} className="btn-secondary text-xs gap-1">
-                              <X size={12}/> Отмена
+                            <button onClick={() => setEditingConclusion(null)}
+                              className="flex items-center gap-2 px-5 py-2.5 rounded-xl border-2 border-gray-200 text-gray-600 text-sm font-semibold hover:bg-gray-50 transition">
+                              <X size={14}/> Отмена
                             </button>
                           </div>
                         </div>
                       ) : (
-                        <div>
-                          <div className="grid grid-cols-2 gap-3 text-sm">
-                            {[['Жалобы',c.complaints],['Диагноз',c.diagnosis],['Назначения',c.medications],['Диета',c.diet_recommendations],['Обследования',c.examination_recommendations]].map(([lbl,val]) => val ? (
-                              <div key={lbl}><p className="text-xs text-gray-500">{lbl}</p><p className="text-gray-800">{val}</p></div>
+                        <div className="p-4 bg-white rounded-2xl border border-gray-100">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {[['🩺 Жалобы',c.complaints],['📋 Диагноз',c.diagnosis],['💊 Назначения',c.medications],['🥗 Диета',c.diet_recommendations],['🔬 Обследования',c.examination_recommendations]].map(([lbl,val]) => val ? (
+                              <div key={lbl} className="bg-gray-50 rounded-xl p-3">
+                                <p className="text-xs font-semibold text-gray-400 mb-1">{lbl}</p>
+                                <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">{val}</p>
+                              </div>
                             ) : null)}
                           </div>
-                          <button onClick={() => startEditConclusion(c)} className="btn-ghost text-xs mt-2 gap-1">
+                          <button onClick={() => startEditConclusion(c)}
+                            className="flex items-center gap-2 mt-4 px-4 py-2 rounded-xl border border-gray-200 text-gray-500 text-xs font-semibold hover:bg-gray-50 transition">
                             <Edit2 size={12}/> Редактировать заключение
                           </button>
                         </div>
