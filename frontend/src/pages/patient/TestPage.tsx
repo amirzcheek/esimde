@@ -104,7 +104,7 @@ function Q1({ onAnswer }: { onAnswer: (p: number) => void }) {
       <div className="grid grid-cols-3 gap-3">
         <div>
           <FieldLabel>День</FieldLabel>
-          <DInput value={day} onChange={setDay} placeholder="01" type="number" hasError={!!err&&!day} />
+          <DInput value={day} onChange={v => { const n = v.replace(/\D/g,''); if (n===''||( parseInt(n)>=1&&parseInt(n)<=31&&n.length<=2)) setDay(n) }} placeholder="01" type="number" hasError={!!err&&!day} />
         </div>
         <div>
           <FieldLabel>Месяц</FieldLabel>
@@ -117,7 +117,7 @@ function Q1({ onAnswer }: { onAnswer: (p: number) => void }) {
         </div>
         <div>
           <FieldLabel>Год</FieldLabel>
-          <DInput value={year} onChange={setYear} placeholder="2025" type="number" hasError={!!err&&!year} />
+          <DInput value={year} onChange={v => { const n = v.replace(/\D/g,''); const y = parseInt(n); if (n===''||(n.length<=4&&y>=1900&&y<=new Date().getFullYear())) setYear(n) }} placeholder="2025" type="number" hasError={!!err&&!year} />
         </div>
       </div>
       <ErrMsg msg={err} />
