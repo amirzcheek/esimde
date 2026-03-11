@@ -211,7 +211,6 @@ async def update_my_profile(
         "height": current_user.height,
         "weight": current_user.weight,
     }
-    await audit_service.log_profile_update(db, current_user.id, old, new, request=request)
     try:
         await db.commit()
         await db.refresh(current_user)
@@ -222,6 +221,8 @@ async def update_my_profile(
         if "ix_users_email" in str(e):
             raise HTTPException(status_code=400, detail="Этот email уже используется другим аккаунтом")
         raise HTTPException(status_code=400, detail="Ошибка сохранения данных")
+    await audit_service.log_profile_update(db, current_user.id, old, new, request=request)
+    await db.commit()
     return {"message": "Профиль обновлён"}
 
 

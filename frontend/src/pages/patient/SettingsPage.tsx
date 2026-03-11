@@ -18,6 +18,9 @@ export default function SettingsPage() {
     birth_date:  '',
     height:      user?.height      || '',
     weight:      user?.weight      || '',
+    chronic_diseases:      user?.chronic_diseases      || '',
+    medication_allergies:  user?.medication_allergies  || '',
+    medical_history:       user?.medical_history       || '',
     phone:       user?.phone       || '',
   })
 
@@ -36,6 +39,9 @@ export default function SettingsPage() {
         birth_date:  u.birth_date  || '',
         height:      u.height      || '',
         weight:      u.weight      || '',
+        chronic_diseases:      u.chronic_diseases      || '',
+        medication_allergies:  u.medication_allergies  || '',
+        medical_history:       u.medical_history       || '',
         phone:       u.phone       || '',
       })
     }).catch(() => {})
@@ -210,6 +216,29 @@ export default function SettingsPage() {
                 value={form.weight} placeholder="70"
                 onChange={e => { const v = e.target.value.replace(/\D/g,''); if (v===''||parseInt(v)<=500) setForm(f=>({...f,weight:v})) }}
               />
+            </div>
+          </div>
+          <div className="pt-2 border-t border-gray-100">
+            <p className="text-xs font-semibold text-gray-500 mb-3">Медицинская информация</p>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1.5">Хронические заболевания</label>
+                <textarea rows={2} placeholder="Например: гипертония, диабет..."
+                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-blue-50 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-300 resize-none"
+                  value={form.chronic_diseases} onChange={e => setForm(f => ({ ...f, chronic_diseases: e.target.value }))} />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1.5">Аллергии на препараты</label>
+                <textarea rows={2} placeholder="Например: пенициллин, аспирин..."
+                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-blue-50 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-300 resize-none"
+                  value={form.medication_allergies} onChange={e => setForm(f => ({ ...f, medication_allergies: e.target.value }))} />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1.5">История болезни</label>
+                <textarea rows={3} placeholder="Кратко опишите историю болезни..."
+                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-blue-50 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-300 resize-none"
+                  value={form.medical_history} onChange={e => setForm(f => ({ ...f, medical_history: e.target.value }))} />
+              </div>
             </div>
           </div>
           <button

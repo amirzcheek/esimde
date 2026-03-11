@@ -83,6 +83,9 @@ class UserBase(BaseModel):
 class UserProfileUpdate(UserBase):
     phone: Optional[str] = None
     city: Optional[str] = None
+    chronic_diseases: Optional[str] = None
+    medication_allergies: Optional[str] = None
+    medical_history: Optional[str] = None
 
 
 class DoctorProfileUpdate(BaseModel):
