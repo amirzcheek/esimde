@@ -59,7 +59,7 @@ export default function AppHeader() {
   ]
 
   return (
-    <div className="sticky top-0 z-50">
+    <div className="sticky top-0 z-[90]">
       <header className="h-14 border-b border-gray-100 bg-white">
         <div className="flex items-center h-full max-w-7xl mx-auto px-4 gap-4">
 

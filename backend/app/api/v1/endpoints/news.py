@@ -5,6 +5,7 @@ from sqlalchemy import select, func as sqlfunc
 from typing import Optional
 import os, uuid, shutil
 
+from sqlalchemy.orm import joinedload
 from app.core.database import get_db
 from app.core.security import get_current_admin
 from app.models.models import News
@@ -34,7 +35,7 @@ def _out(n: News) -> dict:
 async def list_news(page: int = 1, per_page: int = 10, db: AsyncSession = Depends(get_db)):
     offset = (page - 1) * per_page
     result = await db.execute(
-        select(News).where(News.is_published == True)
+        select(News).options(joinedload(News.author)).where(News.is_published == True)
         .order_by(News.created_at.desc()).offset(offset).limit(per_page)
     )
     news = result.scalars().all()
@@ -44,13 +45,13 @@ async def list_news(page: int = 1, per_page: int = 10, db: AsyncSession = Depend
 
 @router.get("/admin/all")
 async def admin_list(db: AsyncSession = Depends(get_db), admin=Depends(get_current_admin)):
-    result = await db.execute(select(News).order_by(News.created_at.desc()))
+    result = await db.execute(select(News).options(joinedload(News.author)).order_by(News.created_at.desc()))
     return [_out(n) for n in result.scalars().all()]
 
 
 @router.get("/{news_id}")
 async def get_one(news_id: int, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(News).where(News.id == news_id, News.is_published == True))
+    result = await db.execute(select(News).options(joinedload(News.author)).where(News.id == news_id, News.is_published == True))
     n = result.scalar_one_or_none()
     if not n:
         raise HTTPException(status_code=404, detail="Новость не найдена")
@@ -88,7 +89,7 @@ async def update_news(
     image: Optional[UploadFile] = File(None),
     db: AsyncSession = Depends(get_db), admin=Depends(get_current_admin),
 ):
-    result = await db.execute(select(News).where(News.id == news_id))
+    result = await db.execute(select(News).options(joinedload(News.author)).where(News.id == news_id))
     n = result.scalar_one_or_none()
     if not n:
         raise HTTPException(status_code=404, detail="Новость не найдена")
@@ -110,7 +111,7 @@ async def update_news(
 
 @router.delete("/{news_id}")
 async def delete_news(news_id: int, db: AsyncSession = Depends(get_db), admin=Depends(get_current_admin)):
-    result = await db.execute(select(News).where(News.id == news_id))
+    result = await db.execute(select(News).options(joinedload(News.author)).where(News.id == news_id))
     n = result.scalar_one_or_none()
     if not n:
         raise HTTPException(status_code=404, detail="Новость не найдена")

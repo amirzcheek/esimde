@@ -340,6 +340,12 @@ function NewsTab() {
   }
   useEffect(() => { load() }, [])
 
+  useEffect(() => {
+    if (showForm) document.body.style.overflow = 'hidden'
+    else document.body.style.overflow = ''
+    return () => { document.body.style.overflow = '' }
+  }, [showForm])
+
   const openCreate = () => { setEditing(null); setForm({ title: '', content: '', is_published: true }); setImage(null); setShowForm(true) }
   const openEdit   = (n: NewsItem) => { setEditing(n); setForm({ title: n.title, content: n.content, is_published: n.is_published }); setImage(null); setShowForm(true) }
   const closeForm  = () => { setShowForm(false); setEditing(null) }
@@ -407,7 +413,7 @@ function NewsTab() {
 
       {/* Форма создания/редактирования */}
       {showForm && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4" onClick={closeForm}>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4" onClick={closeForm}>
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <div className="p-6 space-y-4">
               <h3 className="font-bold text-gray-900 text-lg">{editing ? 'Редактировать новость' : 'Новая новость'}</h3>
