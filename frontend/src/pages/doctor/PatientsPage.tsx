@@ -53,7 +53,7 @@ export default function PatientsPage() {
                 </div>
               </div>
               <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
-                {p.last_test_score !== null && (
+                {p.last_test_score !== null ? (
                   <div className="text-right">
                     <div className="flex items-center gap-1 text-xs text-gray-500 mb-0.5">
                       <FlaskConical size={11} /> Тест
@@ -62,8 +62,12 @@ export default function PatientsPage() {
                       {p.last_test_score.toFixed(0)}%
                     </span>
                   </div>
+                ) : (
+                  <div className="flex items-center gap-1 text-xs text-gray-400">
+                    <FlaskConical size={11} /> Тест не пройден
+                  </div>
                 )}
-                {p.has_test && !p.has_conclusion && (
+                {!p.has_conclusion && (
                   <div className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200">
                     <AlertTriangle size={11} />
                     Заполнить заключение

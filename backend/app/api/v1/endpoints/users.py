@@ -388,6 +388,33 @@ async def list_patients(
         if t.user_id not in tests_by_user:
             tests_by_user[t.user_id] = t
 
+    # Завершённые приёмы у этого врача
+    completed_appts_result = await db.execute(
+        select(Appointment).where(
+            Appointment.doctor_id == current_user.id,
+            Appointment.patient_id.in_(patient_ids),
+            Appointment.status == "completed"
+        )
+    )
+    completed_appts = completed_appts_result.scalars().all()
+
+    # Для каких пациентов есть хоть одно заключение по завершённому приёму
+    appt_ids_with_patients = {a.id: a.patient_id for a in completed_appts}
+    completed_patient_ids = set(a.patient_id for a in completed_appts)
+
+    conclusions_result = await db.execute(
+        select(Conclusion).where(
+            Conclusion.appointment_id.in_(list(appt_ids_with_patients.keys()))
+        )
+    )
+    concluded_appt_ids = set(c.appointment_id for c in conclusions_result.scalars().all())
+    # Пациенты у которых все завершённые приёмы имеют заключения
+    patients_with_all_concluded = set()
+    for pid in completed_patient_ids:
+        appt_ids_for_patient = {aid for aid, ppid in appt_ids_with_patients.items() if ppid == pid}
+        if appt_ids_for_patient and appt_ids_for_patient.issubset(concluded_appt_ids):
+            patients_with_all_concluded.add(pid)
+
     patients_result = await db.execute(
         select(User)
         .where(User.id.in_(patient_ids), User.is_doctor == False)
@@ -405,7 +432,8 @@ async def list_patients(
             "avatar_path": p.avatar_path,
             "last_test_score": tests_by_user[p.id].neurocognitive_score if p.id in tests_by_user else None,
             "has_test": p.id in tests_by_user,
-            "has_conclusion": bool(p.preliminary_conclusion),
+            # True = заключение заполнено по всем завершённым приёмам (или нет завершённых)
+            "has_conclusion": p.id not in completed_patient_ids or p.id in patients_with_all_concluded,
         }
         for p in patients
     ]
