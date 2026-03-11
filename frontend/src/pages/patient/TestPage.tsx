@@ -517,10 +517,10 @@ function Q11({ onAnswer, isAuth }: { onAnswer: (p: number, extra?: object) => vo
 
   const submit = () => {
     const e: Record<string,string> = {}
-    if (!answer)    e.answer = 'Введите фразу'
-    if (!firstName) e.first  = 'Введите имя'
-    if (!lastName)  e.last   = 'Введите фамилию'
+    if (!answer) e.answer = 'Введите фразу'
     if (!isAuth) {
+      if (!firstName) e.first = 'Введите имя'
+      if (!lastName)  e.last  = 'Введите фамилию'
       if (!email) {
         e.email = 'Введите email'
       } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -530,12 +530,12 @@ function Q11({ onAnswer, isAuth }: { onAnswer: (p: number, extra?: object) => vo
         e.phone = 'Введите корректный номер'
       }
     }
-    if (!consent)   e.consent = 'Необходимо согласие'
+    if (!consent) e.consent = 'Необходимо согласие'
     if (Object.keys(e).length) { setErr(e); return }
     const v = answer.trim().toLowerCase()
     onAnswer((v==='я закончил'||v==='я закончила')?1:0, {
       email:email||undefined, phone:phone||undefined,
-      first_name:firstName, last_name:lastName, middle_name:middleName||undefined,
+      first_name:firstName||undefined, last_name:lastName||undefined, middle_name:middleName||undefined,
     })
   }
 
@@ -548,39 +548,37 @@ function Q11({ onAnswer, isAuth }: { onAnswer: (p: number, extra?: object) => vo
           <DInput value={answer} onChange={setAnswer} placeholder="Ответ" hasError={!!err.answer} />
           <ErrMsg msg={err.answer||''} />
         </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <FieldLabel>Фамилия *</FieldLabel>
-            <DInput value={lastName} onChange={setLast} placeholder="Фамилия" hasError={!!err.last} />
-            <ErrMsg msg={err.last||''} />
+        {!isAuth && (
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <FieldLabel>Фамилия *</FieldLabel>
+              <DInput value={lastName} onChange={setLast} placeholder="Фамилия" hasError={!!err.last} />
+              <ErrMsg msg={err.last||''} />
+            </div>
+            <div>
+              <FieldLabel>Имя *</FieldLabel>
+              <DInput value={firstName} onChange={setFirst} placeholder="Имя" hasError={!!err.first} />
+              <ErrMsg msg={err.first||''} />
+            </div>
+            <div className="col-span-2">
+              <FieldLabel>Отчество</FieldLabel>
+              <DInput value={middleName} onChange={setMiddle} placeholder="Отчество (необязательно)" />
+            </div>
+            <div>
+              <FieldLabel>Электронная почта *</FieldLabel>
+              <DInput value={email} onChange={setEmail} placeholder="example@mail.com" type="email" hasError={!!err.email} />
+              <ErrMsg msg={err.email||''} />
+            </div>
+            <div>
+              <FieldLabel>Телефон</FieldLabel>
+              <DInput value={phone} onChange={v => {
+                const digits = v.replace(/\D/g, '').slice(0, 11)
+                setPhone(digits ? '+' + digits : '')
+              }} placeholder="+7 (___) ___-__-__" hasError={!!err.phone} />
+              <ErrMsg msg={err.phone||''} />
+            </div>
           </div>
-          <div>
-            <FieldLabel>Имя *</FieldLabel>
-            <DInput value={firstName} onChange={setFirst} placeholder="Имя" hasError={!!err.first} />
-            <ErrMsg msg={err.first||''} />
-          </div>
-          <div className="col-span-2">
-            <FieldLabel>Отчество</FieldLabel>
-            <DInput value={middleName} onChange={setMiddle} placeholder="Отчество (необязательно)" />
-          </div>
-          {!isAuth && (
-            <>
-              <div>
-                <FieldLabel>Электронная почта *</FieldLabel>
-                <DInput value={email} onChange={setEmail} placeholder="example@mail.com" type="email" hasError={!!err.email} />
-                <ErrMsg msg={err.email||''} />
-              </div>
-              <div>
-                <FieldLabel>Телефон</FieldLabel>
-                <DInput value={phone} onChange={v => {
-                  const digits = v.replace(/\D/g, '').slice(0, 11)
-                  setPhone(digits ? '+' + digits : '')
-                }} placeholder="+7 (___) ___-__-__" hasError={!!err.phone} />
-                <ErrMsg msg={err.phone||''} />
-              </div>
-            </>
-          )}
-        </div>
+        )}
         <label className="flex items-start gap-3 cursor-pointer">
           <input type="checkbox" checked={consent} onChange={e=>setConsent(e.target.checked)}
             className="mt-0.5 w-4 h-4 rounded accent-cyan-500 flex-shrink-0" />
