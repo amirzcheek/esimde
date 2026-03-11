@@ -421,7 +421,7 @@ async def get_patient(
     has_relation = await db.execute(
         select(Appointment).where(
             and_(Appointment.doctor_id == current_user.id, Appointment.patient_id == patient_id)
-        )
+        ).limit(1)
     )
     if not has_relation.scalar_one_or_none():
         raise HTTPException(status_code=403, detail="У вас нет доступа к этому пациенту")
