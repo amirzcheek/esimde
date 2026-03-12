@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuthStore } from '@/store/auth'
-import { usersApi, appointmentsApi, getAvatarUrl } from '@/api'
+import { usersApi, appointmentsApi, getAvatarUrl, memoriesApi } from '@/api'
 import { toast } from 'sonner'
 import type { Me, Appointment, Conclusion, Test } from '@/types'
 
@@ -12,6 +12,8 @@ export default function DashboardPage() {
   const [latestConclusion, setLatestConclusion] = useState<Conclusion | null>(null)
   const [nearestAppointment, setNearestAppointment] = useState<Appointment | null>(null)
   const [loading, setLoading] = useState(true)
+  const [randomMemory, setRandomMemory] = useState<{ id: number; title: string; description: string | null; image_path: string | null } | null>(null)
+  const [memoryAnswer, setMemoryAnswer] = useState<'yes' | 'no' | null>(null)
   const [error, setError] = useState('')
   const [checked, setChecked] = useState<Record<string, boolean>>(() => {
     try { return JSON.parse(localStorage.getItem('rec_checked') || '{}') } catch { return {} }
@@ -37,6 +39,20 @@ export default function DashboardPage() {
         setError('Не удалось загрузить профиль')
       })
       .finally(() => setLoading(false))
+
+    // Загружаем случайное воспоминание каждые 3 часа
+    const MEMORY_INTERVAL_MS = 3 * 60 * 60 * 1000
+    const lastMemoryTs = parseInt(localStorage.getItem('memory_last_ts') || '0')
+    if (Date.now() - lastMemoryTs >= MEMORY_INTERVAL_MS) {
+      memoriesApi.random()
+        .then(res => {
+          if (res.data) {
+            setRandomMemory(res.data)
+            localStorage.setItem('memory_last_ts', String(Date.now()))
+          }
+        })
+        .catch(() => {})
+    }
   }, [])
 
   const initials = user
@@ -78,7 +94,59 @@ export default function DashboardPage() {
             </Link>
           </div>
 
-{/* Рекомендации врача — чеклист */}
+{/* Блок случайного воспоминания */}
+          {randomMemory && memoryAnswer === null && (
+            <div className="bg-white border border-amber-100 rounded-2xl p-5 mb-4 shadow-sm">
+              <p className="text-xs font-semibold text-amber-500 uppercase tracking-wide mb-3">🧠 Тренировка памяти</p>
+              <div className="flex gap-4 items-start">
+                {randomMemory.image_path && (
+                  <img
+                    src={getAvatarUrl(randomMemory.image_path)!}
+                    className="w-20 h-20 rounded-xl object-cover flex-shrink-0"
+                    alt={randomMemory.title}
+                  />
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-gray-500 mb-1">Помните ли вы это?</p>
+                  <h3 className="font-bold text-gray-900 text-base mb-1">{randomMemory.title}</h3>
+                  {randomMemory.description && (
+                    <p className="text-xs text-gray-400 line-clamp-2">{randomMemory.description}</p>
+                  )}
+                </div>
+              </div>
+              <div className="flex gap-3 mt-4">
+                <button
+                  onClick={() => setMemoryAnswer('yes')}
+                  className="flex-1 py-2 rounded-xl bg-green-500 text-white text-sm font-semibold hover:bg-green-600 transition"
+                >
+                  ✅ Помню!
+                </button>
+                <button
+                  onClick={() => setMemoryAnswer('no')}
+                  className="flex-1 py-2 rounded-xl bg-gray-100 text-gray-600 text-sm font-semibold hover:bg-gray-200 transition"
+                >
+                  🤔 Не помню
+                </button>
+              </div>
+            </div>
+          )}
+          {randomMemory && memoryAnswer === 'yes' && (
+            <div className="bg-green-50 border border-green-200 rounded-2xl p-4 mb-4 flex items-center gap-3">
+              <span className="text-2xl">🎉</span>
+              <p className="text-sm text-green-700 font-medium">Отлично! Ваша память работает хорошо.</p>
+            </div>
+          )}
+          {randomMemory && memoryAnswer === 'no' && (
+            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-4 flex items-center gap-3">
+              <span className="text-2xl">💛</span>
+              <div>
+                <p className="text-sm text-amber-700 font-medium">Ничего страшного.</p>
+                <p className="text-xs text-amber-600 mt-0.5">Загляните в <a href="/dashboard/memories" className="underline font-semibold">дневник воспоминаний</a>, чтобы освежить память.</p>
+              </div>
+            </div>
+          )}
+
+          {/* Рекомендации врача — чеклист */}
           {latestConclusion && (() => {
             const items = [
               latestConclusion.examination_recommendations && { key: 'exam', emoji: '🔬', label: 'Анализы', text: latestConclusion.examination_recommendations },

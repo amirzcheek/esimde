@@ -153,3 +153,12 @@ export const newsApi = {
   update:      (id: number, data: FormData) => api.patch(`/news/${id}`, data, { headers: { 'Content-Type': 'multipart/form-data' } }),
   delete:      (id: number) => api.delete(`/news/${id}`),
 }
+
+// ─── Memories ──────────────────────────────────────────────────────────────
+export const memoriesApi = {
+  list:   () => api.get('/memories'),
+  random: () => api.get('/memories/random'),
+  create: (data: FormData) => api.post('/memories', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  update: (id: number, data: FormData) => api.put(`/memories/${id}`, data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  delete: (id: number) => api.delete(`/memories/${id}`),
+}

@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from 'sonner'
 
 import AppLayout from '@/components/layout/AppLayout'
+import MemoryDiaryPage from '@/pages/patient/MemoryDiaryPage'
 import ProtectedRoute from '@/components/shared/ProtectedRoute'
 
 import LandingPage        from '@/pages/LandingPage'
@@ -49,6 +50,7 @@ export default function App() {
             <Route path="/dashboard/settings"     element={<SettingsPage />} />
             <Route path="/appointment"            element={<AppointmentPage />} />
             <Route path="/voice-assistant"        element={<VoiceAssistantPage />} />
+            <Route path="/dashboard/memories"      element={<MemoryDiaryPage />} />
           </Route>
 
           {/* Doctor routes */}

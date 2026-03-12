@@ -50,6 +50,7 @@ class User(Base):
     doctor_availabilities = relationship("DoctorAvailability", back_populates="doctor")
     analyses = relationship("Analysis", back_populates="patient", foreign_keys="Analysis.patient_id")
     conclusions_as_patient = relationship("Conclusion", back_populates="patient", foreign_keys="Conclusion.patient_id")
+    memories = relationship("Memory", back_populates="user", cascade="all, delete-orphan")
     conclusions_as_doctor = relationship("Conclusion", back_populates="doctor", foreign_keys="Conclusion.doctor_id")
     preliminary_conclusions = relationship("PreliminaryConclusion", back_populates="user")
     audit_logs = relationship("AuditLog", back_populates="user")

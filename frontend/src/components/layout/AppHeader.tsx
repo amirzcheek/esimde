@@ -46,9 +46,10 @@ export default function AppHeader() {
     { to: '/doctor/schedule', label: 'Расписание' },
     { to: '/doctor/calendar', label: 'Календарь' },
   ] : isPatient ? [
-    { to: '/dashboard',   label: 'Профиль' },
-    { to: '/appointment', label: 'Запись' },
-    { to: '/news',        label: 'Новости' },
+    { to: '/dashboard',          label: 'Профиль' },
+    { to: '/appointment',        label: 'Запись' },
+    { to: '/dashboard/memories', label: '📖 Дневник' },
+    { to: '/news',               label: 'Новости' },
   ] : isAdmin ? [
     { to: '/admin/audit', label: 'Аудит' },
     { to: '/news',        label: 'Новости' },
