@@ -13,6 +13,16 @@ export default function DashboardPage() {
   const [nearestAppointment, setNearestAppointment] = useState<Appointment | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [checked, setChecked] = useState<Record<string, boolean>>(() => {
+    try { return JSON.parse(localStorage.getItem('rec_checked') || '{}') } catch { return {} }
+  })
+  const toggleCheck = (key: string) => {
+    setChecked(prev => {
+      const next = { ...prev, [key]: !prev[key] }
+      localStorage.setItem('rec_checked', JSON.stringify(next))
+      return next
+    })
+  }
 
   useEffect(() => {
     usersApi.getProfile()
@@ -90,6 +100,50 @@ export default function DashboardPage() {
             </div>
           </div>
 
+{/* Рекомендации врача — чеклист */}
+          {latestConclusion && (() => {
+            const items = [
+              latestConclusion.examination_recommendations && { key: 'exam', emoji: '🔬', label: 'Анализы', text: latestConclusion.examination_recommendations },
+              latestConclusion.diet_recommendations        && { key: 'diet', emoji: '🥗', label: 'Питание', text: latestConclusion.diet_recommendations },
+              latestConclusion.medications                 && { key: 'meds', emoji: '💊', label: 'Лекарства', text: latestConclusion.medications },
+            ].filter(Boolean) as { key: string; emoji: string; label: string; text: string }[]
+            if (!items.length) return null
+            const doneCount = items.filter(i => checked[i.key]).length
+            return (
+              <div className="bg-white border border-blue-100 rounded-2xl p-5 mb-4 shadow-sm">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-bold text-base text-gray-900 flex items-center gap-2">
+                    🩺 Рекомендации врача
+                  </h3>
+                  <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-blue-50 text-blue-600">
+                    {doneCount}/{items.length} выполнено
+                  </span>
+                </div>
+                <div className="space-y-2">
+                  {items.map(item => (
+                    <div key={item.key}
+                      onClick={() => toggleCheck(item.key)}
+                      className={`flex items-start gap-3 p-3 rounded-xl cursor-pointer transition-all select-none
+                        ${checked[item.key] ? 'bg-green-50 border border-green-200' : 'bg-gray-50 border border-gray-100 hover:border-blue-200'}`}
+                    >
+                      <div className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all
+                        ${checked[item.key] ? 'bg-green-500 border-green-500' : 'border-gray-300'}`}>
+                        {checked[item.key] && <svg className="w-3 h-3 text-white" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5 mb-0.5">
+                          <span>{item.emoji}</span>
+                          <span className={`text-sm font-semibold ${checked[item.key] ? 'text-green-700 line-through' : 'text-gray-800'}`}>{item.label}</span>
+                        </div>
+                        <p className={`text-xs leading-relaxed whitespace-pre-line ${checked[item.key] ? 'text-green-600' : 'text-gray-500'}`}>{item.text}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )
+          })()}
+
           {/* Активная запись с кнопкой отмены */}
           {nearestAppointment && (
             <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-4">
@@ -133,35 +187,6 @@ export default function DashboardPage() {
                 >
                   Отменить
                 </button>
-              </div>
-            </div>
-          )}
-
-          {/* Рекомендации врача */}
-          {latestConclusion && (
-            <div className="bg-white border border-blue-200 rounded-lg p-5 mb-4">
-              <h3 className="font-semibold text-lg text-blue-600 flex items-center gap-2 mb-3">
-                <span>🩺</span> Рекомендации врача
-              </h3>
-              <div className="space-y-3 text-sm">
-                {latestConclusion.examination_recommendations && (
-                  <div>
-                    <div className="flex items-center gap-2 mb-1"><span>🔬</span><span className="font-semibold text-gray-700">Анализы</span></div>
-                    <div className="pl-7 text-gray-600 whitespace-pre-line">{latestConclusion.examination_recommendations}</div>
-                  </div>
-                )}
-                {latestConclusion.diet_recommendations && (
-                  <div>
-                    <div className="flex items-center gap-2 mb-1"><span>🥗</span><span className="font-semibold text-gray-700">Питание</span></div>
-                    <div className="pl-7 text-gray-600 whitespace-pre-line">{latestConclusion.diet_recommendations}</div>
-                  </div>
-                )}
-                {latestConclusion.medications && (
-                  <div>
-                    <div className="flex items-center gap-2 mb-1"><span>💊</span><span className="font-semibold text-gray-700">Лекарства</span></div>
-                    <div className="pl-7 text-gray-600 whitespace-pre-line">{latestConclusion.medications}</div>
-                  </div>
-                )}
               </div>
             </div>
           )}
