@@ -65,39 +65,17 @@ export default function DashboardPage() {
 
         {/* Main */}
         <div className="w-full lg:w-2/3 flex flex-col">
-          <div className="flex flex-col sm:flex-row items-start gap-6 mb-6">
-            {/* Avatar */}
-            <div className="flex flex-none items-center justify-center size-24 bg-red-100 font-medium text-3xl text-red-500 rounded-full overflow-hidden">
-              {getAvatarUrl(user?.avatar_path)
-                ? <img src={getAvatarUrl(user?.avatar_path)!} className="w-24 h-24 object-cover" alt="avatar" />
-                : (initials || '?')
-              }
+          <div className="flex items-center gap-3 mb-6">
+            <div>
+              <p className="text-sm text-gray-400">Здравствуйте,</p>
+              <h1 className="font-bold text-2xl text-gray-900">{user?.first_name || 'Пациент'} 👋</h1>
             </div>
-            <div className="w-full flex flex-col">
-              <div className="flex items-center mb-3">
-                <h1 className="font-semibold text-2xl text-zinc-800">{displayName || 'Профиль'}</h1>
-                <Link to="/dashboard/settings" className="text-gray-500 hover:bg-gray-50 hover:text-blue-500 rounded-md ml-3 p-2">
-                  <svg className="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z"/>
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
-                  </svg>
-                </Link>
-              </div>
-              <hr className="mb-4 border-zinc-200"/>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
-                {[
-                  { label: 'Возраст', val: user?.age ? `${user.age} лет` : '-' },
-                  { label: 'Рост',    val: user?.height ? `${user.height} см` : '-' },
-                  { label: 'Вес',     val: user?.weight ? `${user.weight} кг` : '-' },
-                  { label: 'Телефон', val: user?.phone ?? '-' },
-                ].map(({ label, val }) => (
-                  <div key={label} className="flex flex-col items-center p-3 bg-gray-50 rounded-lg">
-                    <div className="text-gray-500 mb-1 text-xs">{label}</div>
-                    <div className="font-medium text-xs">{val}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <Link to="/dashboard/settings" className="ml-auto text-gray-400 hover:text-blue-500 transition p-2 rounded-xl hover:bg-gray-50">
+              <svg className="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z"/>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
+              </svg>
+            </Link>
           </div>
 
 {/* Рекомендации врача — чеклист */}
