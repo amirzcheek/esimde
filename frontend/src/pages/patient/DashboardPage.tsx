@@ -296,12 +296,12 @@ export default function DashboardPage() {
             </div>
           </Link>
 
-          <Link
+          {/* <Link
             to="/voice-assistant"
             className="inline-flex items-center justify-center rounded-full border border-cyan-300 px-4 py-3 text-sm font-semibold text-cyan-600 hover:bg-cyan-50 transition"
           >
             🎙 Голосовой ассистент
-          </Link>
+          </Link> */}
 
           <Link
             to="/dashboard/settings"
