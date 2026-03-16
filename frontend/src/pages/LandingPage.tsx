@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 const PlayIcon = () => (
@@ -93,13 +93,23 @@ function VideoPlayer() {
     return `${m}:${sec.toString().padStart(2, '0')}`
   }
 
-  const onMouseEnter = () => {
+  // Автозапуск когда видео появляется в viewport
+  useEffect(() => {
     const v = videoRef.current
-    if (!v || playing) return
-    v.muted = true
-    setVolume(0)
-    v.play().then(() => setPlaying(true)).catch(() => {})
-  }
+    if (!v) return
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !playing) {
+          v.muted = true
+          setVolume(0)
+          v.play().then(() => setPlaying(true)).catch(() => {})
+        }
+      },
+      { threshold: 0.5 }
+    )
+    observer.observe(v)
+    return () => observer.disconnect()
+  }, [])
 
   const onMouseMove = () => {
     setShowControls(true)
@@ -111,7 +121,6 @@ function VideoPlayer() {
     <div
       className="relative w-full rounded-3xl overflow-hidden shadow-2xl bg-gray-900"
       style={{ aspectRatio: '16/9' }}
-      onMouseEnter={onMouseEnter}
       onMouseMove={onMouseMove}
       onMouseLeave={() => setShowControls(false)}
     >
