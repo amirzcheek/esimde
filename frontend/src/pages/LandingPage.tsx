@@ -82,6 +82,7 @@ function VideoPlayer() {
     const v = videoRef.current
     if (!v) return
     const val = Number(e.target.value)
+    v.muted = false
     v.volume = val
     setVolume(val)
   }
@@ -90,6 +91,14 @@ function VideoPlayer() {
     const m = Math.floor(s / 60)
     const sec = Math.floor(s % 60)
     return `${m}:${sec.toString().padStart(2, '0')}`
+  }
+
+  const onMouseEnter = () => {
+    const v = videoRef.current
+    if (!v || playing) return
+    v.muted = true
+    setVolume(0)
+    v.play().then(() => setPlaying(true)).catch(() => {})
   }
 
   const onMouseMove = () => {
@@ -102,6 +111,7 @@ function VideoPlayer() {
     <div
       className="relative w-full rounded-3xl overflow-hidden shadow-2xl bg-gray-900"
       style={{ aspectRatio: '16/9' }}
+      onMouseEnter={onMouseEnter}
       onMouseMove={onMouseMove}
       onMouseLeave={() => setShowControls(false)}
     >
