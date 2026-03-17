@@ -3,6 +3,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_
 from sqlalchemy.orm import selectinload
 from datetime import date, datetime, timezone, timedelta
+from zoneinfo import ZoneInfo
+
+KZ_TZ = ZoneInfo('Asia/Almaty')
 
 from app.core.database import get_db
 from app.core.security import get_current_user, get_current_doctor
@@ -18,13 +21,12 @@ router = APIRouter(prefix="/appointments", tags=["Appointments"])
 
 
 def _week_start(offset: int = 0) -> date:
-    today = date.today()
+    today = datetime.now(KZ_TZ).date()
     monday = today - timedelta(days=today.weekday())
     return monday + timedelta(weeks=offset)
 
 
 def _appointment_to_dict(a: Appointment) -> dict:
-    """Полный словарь записи с вложенными doctor/patient/conclusion."""
     def _user_dict(u):
         if not u:
             return None
@@ -76,11 +78,10 @@ async def get_week_slots(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Возвращает дни недели с флагом наличия слотов."""
     start = _week_start(week_offset)
     end = start + timedelta(days=6)
-    today = date.today()
-    now_time = datetime.now(timezone.utc).time()
+    today = datetime.now(KZ_TZ).date()
+    now_time = datetime.now(KZ_TZ).time()
 
     result = await db.execute(
         select(Availability).where(
@@ -125,12 +126,11 @@ async def get_day_slots(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Возвращает доступные слоты на конкретный день."""
-    today = date.today()
+    today = datetime.now(KZ_TZ).date()
     if slot_date < today:
         raise HTTPException(status_code=400, detail="Нельзя выбрать прошедшую дату")
 
-    now_time = datetime.now(timezone.utc).time()
+    now_time = datetime.now(KZ_TZ).time()
 
     query = select(Availability).where(
         and_(
@@ -166,8 +166,6 @@ async def book_appointment(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Записаться на приём."""
-    # Проверяем нет ли уже активной записи
     existing = await db.execute(
         select(Appointment).where(
             and_(
@@ -182,7 +180,6 @@ async def book_appointment(
             detail="У вас уже есть активная запись. Отмените её перед созданием новой."
         )
 
-    # Блокируем слот
     slot_result = await db.execute(
         select(Availability).where(Availability.id == body.slot_id).with_for_update()
     )
@@ -190,13 +187,11 @@ async def book_appointment(
     if not slot or not slot.available:
         raise HTTPException(status_code=409, detail="Слот уже занят. Выберите другой.")
 
-    # Проверяем что не в прошлом
-    now = datetime.now(timezone.utc)
-    slot_dt = datetime.combine(slot.date, slot.start_time).replace(tzinfo=timezone.utc)
+    now = datetime.now(KZ_TZ)
+    slot_dt = datetime.combine(slot.date, slot.start_time).replace(tzinfo=KZ_TZ)
     if slot_dt < now:
         raise HTTPException(status_code=400, detail="Нельзя записаться на прошедшее время.")
 
-    # Создаём запись
     appointment = Appointment(
         user_id=current_user.id,
         patient_id=current_user.id,
@@ -213,7 +208,6 @@ async def book_appointment(
     db.add(appointment)
     await db.flush()
 
-    # Создаём пустое заключение
     conclusion = Conclusion(
         appointment_id=appointment.id,
         patient_id=current_user.id,
@@ -233,7 +227,6 @@ async def get_active_appointment(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Активная запись текущего пациента."""
     result = await db.execute(
         select(Appointment)
         .options(
@@ -260,7 +253,6 @@ async def get_appointment(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Получить запись по ID."""
     result = await db.execute(
         select(Appointment)
         .options(
@@ -285,7 +277,6 @@ async def cancel_appointment(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Отменить запись (пациент)."""
     result = await db.execute(
         select(Appointment).where(Appointment.id == appointment_id).with_for_update()
     )
@@ -300,7 +291,6 @@ async def cancel_appointment(
     old_status = appointment.status.value
     appointment.status = AppointmentStatus.CANCELLED
 
-    # Освобождаем слот
     slot_result = await db.execute(
         select(Availability).where(
             and_(
@@ -329,7 +319,6 @@ async def update_appointment_status(
     current_user: User = Depends(get_current_doctor),
     db: AsyncSession = Depends(get_db),
 ):
-    """Изменить статус записи (только врач)."""
     result = await db.execute(
         select(Appointment).where(Appointment.id == appointment_id).with_for_update()
     )
@@ -358,7 +347,6 @@ async def doctor_appointments(
     current_user: User = Depends(get_current_doctor),
     db: AsyncSession = Depends(get_db),
 ):
-    """Все записи текущего врача."""
     query = (
         select(Appointment)
         .options(
