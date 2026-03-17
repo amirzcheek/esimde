@@ -32,12 +32,6 @@ function NewsCard({ item, onClick }: { item: NewsItem; onClick: () => void }) {
       <div className="p-5">
         <div className="flex items-center gap-2 mb-2">
           <span className="text-xs text-gray-400">{formatDate(item.created_at)}</span>
-          {item.author_name && (
-            <>
-              <span className="text-gray-200">•</span>
-              <span className="text-xs text-cyan-500">{item.author_name}</span>
-            </>
-          )}
         </div>
         <h3 className="font-semibold text-gray-900 text-base leading-snug mb-2 group-hover:text-cyan-600 transition-colors">
           {item.title}
@@ -69,12 +63,6 @@ function NewsModal({ item, onClose }: { item: NewsItem; onClose: () => void }) {
         <div className="p-6">
           <div className="flex items-center gap-2 mb-3">
             <span className="text-xs text-gray-400">{formatDate(item.created_at)}</span>
-            {item.author_name && (
-              <>
-                <span className="text-gray-200">•</span>
-                <span className="text-xs text-cyan-500">{item.author_name}</span>
-              </>
-            )}
           </div>
           <h2 className="font-bold text-gray-900 text-xl leading-snug mb-4">{item.title}</h2>
           <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{item.content}</p>
