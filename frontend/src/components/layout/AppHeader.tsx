@@ -48,7 +48,6 @@ export default function AppHeader() {
   ] : isPatient ? [
     { to: '/dashboard',          label: 'Профиль' },
     { to: '/appointment',        label: 'Запись' },
-    { to: '/dashboard/memories', label: '📖 Дневник' },
     { to: '/news',               label: 'Новости' },
   ] : isAdmin ? [
     { to: '/admin/audit', label: 'Аудит' },
@@ -66,7 +65,7 @@ export default function AppHeader() {
 
           {/* Логотип */}
           <Link
-            to={token ? (isDoctor ? '/doctor' : '/dashboard') : '/'}
+            to={isDoctor ? '/doctor' : '/'}
             className="font-bold text-2xl flex-shrink-0"
             style={{ background: 'linear-gradient(to right, #06b6d4, #3b82f6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}
           >
