@@ -156,25 +156,36 @@ export default function DashboardPage() {
     // - если ответил — следующее через 3 часа
     const MEMORY_INTERVAL_MS = 3 * 60 * 60 * 1000
     const pending = localStorage.getItem('memory_pending')
+    // sessionStorage сбрасывается при закрытии вкладки/браузера
+    // Используем его чтобы отслеживать показ внутри одной сессии
+    const shownThisSession = sessionStorage.getItem('memory_shown_session')
 
     if (pending) {
-      // Уже есть неотвеченное — восстанавливается из useState initializer
-    } else {
-      // Нет pending — загружаем новое при каждом заходе
-      // Если недавно отвечал (< 3 часов) — тоже показываем, но другое
+      // Есть неотвеченное — восстанавливается из useState initializer, ничего не делаем
+    } else if (!shownThisSession) {
+      // Новая сессия (новый заход) — показываем всегда
       memoriesApi.random()
         .then(res => {
           if (res.data) {
-            // Проверяем прошло ли 3 часа с последнего ответа
-            const lastTs = parseInt(localStorage.getItem('memory_last_ts') || '0')
-            const tooSoon = lastTs > 0 && (Date.now() - lastTs < MEMORY_INTERVAL_MS)
-            if (!tooSoon) {
-              setRandomMemory(res.data)
-              localStorage.setItem('memory_pending', JSON.stringify(res.data))
-            }
+            setRandomMemory(res.data)
+            localStorage.setItem('memory_pending', JSON.stringify(res.data))
+            sessionStorage.setItem('memory_shown_session', '1')
           }
         })
         .catch(() => {})
+    } else {
+      // Та же сессия — показываем только если прошло 3 часа с последнего ответа
+      const lastTs = parseInt(localStorage.getItem('memory_last_ts') || '0')
+      if (lastTs > 0 && Date.now() - lastTs >= MEMORY_INTERVAL_MS) {
+        memoriesApi.random()
+          .then(res => {
+            if (res.data) {
+              setRandomMemory(res.data)
+              localStorage.setItem('memory_pending', JSON.stringify(res.data))
+            }
+          })
+          .catch(() => {})
+      }
     }
   }, [])
 
