@@ -12,6 +12,24 @@ export default function AppHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, to: string) => {
+    if (to.startsWith('/#')) {
+      e.preventDefault()
+      const id = to.slice(2)
+      const el = document.getElementById(id)
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' })
+      } else {
+        // если не на главной — сначала переходим туда, потом скроллим
+        navigate('/')
+        setTimeout(() => {
+          document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
+        }, 300)
+      }
+      setMobileMenuOpen(false)
+    }
+  }
+
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
@@ -75,7 +93,12 @@ export default function AppHeader() {
           {/* Десктоп nav */}
           <nav className="hidden md:flex items-center gap-6 ml-8">
             {navLinks.map(l => (
-              <Link key={l.to} to={l.to} className="text-sm font-medium text-gray-600 hover:text-cyan-600 transition">
+              <Link
+                key={l.to}
+                to={l.to}
+                className="text-sm font-medium text-gray-600 hover:text-cyan-600 transition"
+                onClick={l.to.startsWith('/#') ? e => handleNavClick(e, l.to) : undefined}
+              >
                 {l.label}
               </Link>
             ))}
@@ -142,6 +165,7 @@ export default function AppHeader() {
                 key={l.to}
                 to={l.to}
                 className="py-2.5 px-3 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-xl transition"
+                onClick={l.to.startsWith('/#') ? e => handleNavClick(e, l.to) : undefined}
               >
                 {l.label}
               </Link>
