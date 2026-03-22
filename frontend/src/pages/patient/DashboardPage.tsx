@@ -156,18 +156,22 @@ export default function DashboardPage() {
     // - если ответил — следующее через 3 часа
     const MEMORY_INTERVAL_MS = 3 * 60 * 60 * 1000
     const pending = localStorage.getItem('memory_pending')
-    const lastMemoryTs = parseInt(localStorage.getItem('memory_last_ts') || '0')
-    const answeredRecently = lastMemoryTs > 0 && (Date.now() - lastMemoryTs < MEMORY_INTERVAL_MS)
 
     if (pending) {
       // Уже есть неотвеченное — восстанавливается из useState initializer
-    } else if (!answeredRecently) {
-      // Каждый заход показываем новое (или если прошло 3 часа после ответа)
+    } else {
+      // Нет pending — загружаем новое при каждом заходе
+      // Если недавно отвечал (< 3 часов) — тоже показываем, но другое
       memoriesApi.random()
         .then(res => {
           if (res.data) {
-            setRandomMemory(res.data)
-            localStorage.setItem('memory_pending', JSON.stringify(res.data))
+            // Проверяем прошло ли 3 часа с последнего ответа
+            const lastTs = parseInt(localStorage.getItem('memory_last_ts') || '0')
+            const tooSoon = lastTs > 0 && (Date.now() - lastTs < MEMORY_INTERVAL_MS)
+            if (!tooSoon) {
+              setRandomMemory(res.data)
+              localStorage.setItem('memory_pending', JSON.stringify(res.data))
+            }
           }
         })
         .catch(() => {})
