@@ -304,10 +304,28 @@ export default function DashboardPage() {
           </Link> */}
 
           <Link
+            to="/dashboard/memories"
+            className="inline-flex items-center justify-center rounded-full p-0.5 transition-all hover:shadow-lg"
+            style={{ background: 'linear-gradient(135deg, #f59e0b, #ec4899)' }}
+          >
+            <div className="flex items-center justify-center w-full rounded-full px-4 py-3 gap-2">
+              <span className="text-base">📖</span>
+              <span className="font-semibold text-white text-sm">Дневник воспоминаний</span>
+            </div>
+          </Link>
+
+          <Link
             to="/dashboard/settings"
             className="inline-flex items-center justify-center rounded-full border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition"
           >
             📄 Загрузить анализы
+          </Link>
+
+          <Link
+            to="/dashboard/memories"
+            className="inline-flex items-center justify-center rounded-full border border-cyan-200 bg-cyan-50 px-4 py-3 text-sm font-semibold text-cyan-600 hover:bg-cyan-100 transition"
+          >
+            📖 Дневник воспоминаний
           </Link>
         </div>
       </div>
