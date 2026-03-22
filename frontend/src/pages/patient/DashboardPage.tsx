@@ -151,21 +151,23 @@ export default function DashboardPage() {
       .finally(() => setLoading(false))
 
     // Логика воспоминания:
-    // - показываем при каждом заходе если нет pending
-    // - если pending есть (не ответил) — оставляем его
-    // - если ответил — показываем новое через 3 часа
+    // - если pending (не ответил) — показываем то же самое
+    // - если нет pending — при каждом заходе показываем новое
+    // - если ответил — следующее через 3 часа
     const MEMORY_INTERVAL_MS = 3 * 60 * 60 * 1000
     const pending = localStorage.getItem('memory_pending')
     const lastMemoryTs = parseInt(localStorage.getItem('memory_last_ts') || '0')
-    const shouldLoad = !pending && (Date.now() - lastMemoryTs >= MEMORY_INTERVAL_MS)
+    const answeredRecently = lastMemoryTs > 0 && (Date.now() - lastMemoryTs < MEMORY_INTERVAL_MS)
 
-    if (shouldLoad) {
+    if (pending) {
+      // Уже есть неотвеченное — восстанавливается из useState initializer
+    } else if (!answeredRecently) {
+      // Каждый заход показываем новое (или если прошло 3 часа после ответа)
       memoriesApi.random()
         .then(res => {
           if (res.data) {
             setRandomMemory(res.data)
             localStorage.setItem('memory_pending', JSON.stringify(res.data))
-            // НЕ обновляем memory_last_ts пока не ответит
           }
         })
         .catch(() => {})
