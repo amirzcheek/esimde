@@ -1,9 +1,113 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuthStore } from '@/store/auth'
 import { usersApi, appointmentsApi, getAvatarUrl, memoriesApi } from '@/api'
 import { toast } from 'sonner'
 import type { Me, Appointment, Conclusion, Test } from '@/types'
+
+
+// ─── Быстрое добавление воспоминания ─────────────────────────────────────────
+function MemoryQuickAdd() {
+  const [open, setOpen] = useState(false)
+  const [title, setTitle] = useState('')
+  const [desc, setDesc] = useState('')
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [preview, setPreview] = useState<string | null>(null)
+  const [saving, setSaving] = useState(false)
+  const fileRef = useRef<HTMLInputElement>(null)
+
+  const handleImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setImageFile(file)
+    setPreview(URL.createObjectURL(file))
+  }
+
+  const handleSave = async () => {
+    if (!title.trim()) return
+    setSaving(true)
+    try {
+      const fd = new FormData()
+      fd.append('title', title.trim())
+      fd.append('description', desc.trim())
+      if (imageFile) fd.append('image', imageFile)
+      await memoriesApi.create(fd)
+      setTitle(''); setDesc(''); setImageFile(null); setPreview(null); setOpen(false)
+    } catch {
+      // silent
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="bg-white border border-amber-100 rounded-2xl overflow-hidden shadow-sm">
+      {/* Шапка */}
+      <div
+        className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-amber-50 transition"
+        onClick={() => setOpen(o => !o)}
+      >
+        <div className="flex items-center gap-2">
+          <span className="text-xl">📖</span>
+          <span className="text-sm font-semibold text-gray-800">Дневник воспоминаний</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Link
+            to="/dashboard/memories"
+            onClick={e => e.stopPropagation()}
+            className="text-xs text-amber-500 hover:underline font-medium"
+          >
+            Все →
+          </Link>
+          <span className={`text-gray-400 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}>▾</span>
+        </div>
+      </div>
+
+      {/* Форма быстрого добавления */}
+      {open && (
+        <div className="px-4 pb-4 space-y-3 border-t border-amber-50 pt-3">
+          {/* Фото */}
+          <div
+            onClick={() => fileRef.current?.click()}
+            className="w-full h-28 rounded-xl border-2 border-dashed border-amber-200 bg-amber-50 cursor-pointer hover:border-amber-400 transition overflow-hidden flex items-center justify-center"
+          >
+            {preview ? (
+              <img src={preview} className="w-full h-full object-cover" alt="preview" />
+            ) : (
+              <div className="text-center text-amber-300">
+                <div className="text-2xl mb-1">📷</div>
+                <p className="text-xs">Добавить фото</p>
+              </div>
+            )}
+            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleImage} />
+          </div>
+
+          <input
+            className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300"
+            placeholder="Название (Мама, Дача, Свадьба...)"
+            value={title}
+            onChange={e => setTitle(e.target.value)}
+          />
+          <textarea
+            className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 resize-none"
+            rows={2}
+            placeholder="Описание..."
+            value={desc}
+            onChange={e => setDesc(e.target.value)}
+          />
+          <button
+            onClick={handleSave}
+            disabled={saving || !title.trim()}
+            className="w-full py-2 rounded-xl text-sm font-semibold text-white disabled:opacity-50 transition"
+            style={{ background: 'linear-gradient(135deg, #f59e0b, #f97316)' }}
+          >
+            {saving ? 'Сохраняю...' : '+ Сохранить воспоминание'}
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
 
 export default function DashboardPage() {
   const { user: authUser } = useAuthStore()
@@ -304,29 +408,14 @@ export default function DashboardPage() {
           </Link> */}
 
           <Link
-            to="/dashboard/memories"
-            className="inline-flex items-center justify-center rounded-full p-0.5 transition-all hover:shadow-lg"
-            style={{ background: 'linear-gradient(135deg, #f59e0b, #ec4899)' }}
-          >
-            <div className="flex items-center justify-center w-full rounded-full px-4 py-3 gap-2">
-              <span className="text-base">📖</span>
-              <span className="font-semibold text-white text-sm">Дневник воспоминаний</span>
-            </div>
-          </Link>
-
-          <Link
             to="/dashboard/settings"
             className="inline-flex items-center justify-center rounded-full border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition"
           >
             📄 Загрузить анализы
           </Link>
 
-          <Link
-            to="/dashboard/memories"
-            className="inline-flex items-center justify-center rounded-full border border-cyan-200 bg-cyan-50 px-4 py-3 text-sm font-semibold text-cyan-600 hover:bg-cyan-100 transition"
-          >
-            📖 Дневник воспоминаний
-          </Link>
+          {/* Карточка быстрого добавления воспоминания */}
+          <MemoryQuickAdd />
         </div>
       </div>
     </section>
