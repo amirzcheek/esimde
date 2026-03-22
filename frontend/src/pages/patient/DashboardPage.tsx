@@ -116,7 +116,13 @@ export default function DashboardPage() {
   const [latestConclusion, setLatestConclusion] = useState<Conclusion | null>(null)
   const [nearestAppointment, setNearestAppointment] = useState<Appointment | null>(null)
   const [loading, setLoading] = useState(true)
-  const [randomMemory, setRandomMemory] = useState<{ id: number; title: string; description: string | null; image_path: string | null } | null>(null)
+  const [randomMemory, setRandomMemory] = useState<{ id: number; title: string; description: string | null; image_path: string | null } | null>(() => {
+    // Восстанавливаем воспоминание из localStorage если пациент ещё не ответил
+    try {
+      const saved = localStorage.getItem('memory_pending')
+      return saved ? JSON.parse(saved) : null
+    } catch { return null }
+  })
   const [memoryAnswer, setMemoryAnswer] = useState<'yes' | 'no' | null>(null)
   const [error, setError] = useState('')
   const [checked, setChecked] = useState<Record<string, boolean>>(() => {
@@ -144,15 +150,22 @@ export default function DashboardPage() {
       })
       .finally(() => setLoading(false))
 
-    // Загружаем случайное воспоминание каждые 3 часа
+    // Логика воспоминания:
+    // - показываем при каждом заходе если нет pending
+    // - если pending есть (не ответил) — оставляем его
+    // - если ответил — показываем новое через 3 часа
     const MEMORY_INTERVAL_MS = 3 * 60 * 60 * 1000
+    const pending = localStorage.getItem('memory_pending')
     const lastMemoryTs = parseInt(localStorage.getItem('memory_last_ts') || '0')
-    if (Date.now() - lastMemoryTs >= MEMORY_INTERVAL_MS) {
+    const shouldLoad = !pending && (Date.now() - lastMemoryTs >= MEMORY_INTERVAL_MS)
+
+    if (shouldLoad) {
       memoriesApi.random()
         .then(res => {
           if (res.data) {
             setRandomMemory(res.data)
-            localStorage.setItem('memory_last_ts', String(Date.now()))
+            localStorage.setItem('memory_pending', JSON.stringify(res.data))
+            // НЕ обновляем memory_last_ts пока не ответит
           }
         })
         .catch(() => {})
@@ -220,13 +233,21 @@ export default function DashboardPage() {
               </div>
               <div className="flex gap-3 mt-4">
                 <button
-                  onClick={() => setMemoryAnswer('yes')}
+                  onClick={() => {
+                    setMemoryAnswer('yes')
+                    localStorage.removeItem('memory_pending')
+                    localStorage.setItem('memory_last_ts', String(Date.now()))
+                  }}
                   className="flex-1 py-2 rounded-xl bg-green-500 text-white text-sm font-semibold hover:bg-green-600 transition"
                 >
                   ✅ Помню!
                 </button>
                 <button
-                  onClick={() => setMemoryAnswer('no')}
+                  onClick={() => {
+                    setMemoryAnswer('no')
+                    localStorage.removeItem('memory_pending')
+                    localStorage.setItem('memory_last_ts', String(Date.now()))
+                  }}
                   className="flex-1 py-2 rounded-xl bg-gray-100 text-gray-600 text-sm font-semibold hover:bg-gray-200 transition"
                 >
                   🤔 Не помню
