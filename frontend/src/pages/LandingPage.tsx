@@ -286,7 +286,7 @@ export default function LandingPage() {
       </section>
 
       {/* 3 BLOCKS */}
-      <section className="flex flex-col items-center container max-w-7xl mx-auto py-12 px-4">
+      <section id="about" className="flex flex-col items-center container max-w-7xl mx-auto py-12 px-4">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-16 mb-12 w-full">
           {[
             { label: 'Пройдите короткий тест',                       img: '/images/block_1.jpg' },
