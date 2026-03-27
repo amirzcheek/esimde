@@ -50,6 +50,9 @@ export default function AppointmentPage() {
     enabled: !!selectedDoctor && !!selectedDate,
   })
 
+  const [consents, setConsents] = useState({ terms: false, privacy: false, refund: false })
+  const allConsented = consents.terms && consents.privacy && consents.refund
+
   const bookMutation = useMutation({
     mutationFn: (slotId: number) => appointmentsApi.book(slotId),
     onSuccess: () => {
@@ -256,7 +259,26 @@ export default function AppointmentPage() {
               </div>
             )}
 
-            <div className="mt-5 flex gap-2">
+            {/* Чекбоксы согласия */}
+            <div className="mt-4 space-y-2 border-t pt-4">
+              {[
+                { key: 'terms',   label: 'Я ознакомился(-ась) с', link: '/payment',  linkText: 'условиями оказания услуг' },
+                { key: 'privacy', label: 'Я ознакомился(-ась) с', link: '/privacy',  linkText: 'политикой конфиденциальности' },
+                { key: 'refund',  label: 'Я ознакомился(-ась) с', link: '/refund',   linkText: 'условиями возврата и отмены' },
+              ].map(({ key, label, link, linkText }) => (
+                <label key={key} className="flex items-start gap-2 cursor-pointer text-xs text-gray-600">
+                  <input
+                    type="checkbox"
+                    checked={consents[key as keyof typeof consents]}
+                    onChange={e => setConsents(p => ({ ...p, [key]: e.target.checked }))}
+                    className="mt-0.5 flex-shrink-0 accent-cyan-500"
+                  />
+                  <span>{label} <a href={link} target="_blank" rel="noreferrer" className="text-cyan-600 hover:underline" onClick={e => e.stopPropagation()}>{linkText}</a> и согласен(-на) с ними</span>
+                </label>
+              ))}
+            </div>
+
+            <div className="mt-4 flex gap-2">
               <button
                 onClick={closeModal}
                 className="flex-1 py-2.5 rounded-full border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50"
@@ -265,7 +287,7 @@ export default function AppointmentPage() {
               </button>
               <button
                 onClick={() => selectedSlot && bookMutation.mutate(selectedSlot)}
-                disabled={!selectedSlot || bookMutation.isPending}
+                disabled={!selectedSlot || bookMutation.isPending || !allConsented}
                 className="flex-1 py-2.5 rounded-full text-white text-sm font-semibold disabled:opacity-50 transition"
                 style={gradStyle}
               >

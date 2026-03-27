@@ -4,6 +4,11 @@ import { Toaster } from 'sonner'
 
 import AppLayout from '@/components/layout/AppLayout'
 import MemoryDiaryPage from '@/pages/patient/MemoryDiaryPage'
+import AboutPage from '@/pages/AboutPage'
+import ServicesPage from '@/pages/ServicesPage'
+import PaymentPage from '@/pages/PaymentPage'
+import RefundPage from '@/pages/RefundPage'
+import PrivacyPage from '@/pages/PrivacyPage'
 import ProtectedRoute from '@/components/shared/ProtectedRoute'
 
 import LandingPage        from '@/pages/LandingPage'
@@ -39,6 +44,11 @@ export default function App() {
             <Route path="/test/go"      element={<TestPage />} />
             <Route path="/report/:hash" element={<ReportPage />} />
             <Route path="/news"          element={<NewsPage />} />
+          <Route path="/about"         element={<AboutPage />} />
+          <Route path="/services"      element={<ServicesPage />} />
+          <Route path="/payment"       element={<PaymentPage />} />
+          <Route path="/refund"        element={<RefundPage />} />
+          <Route path="/privacy"       element={<PrivacyPage />} />
           </Route>
 
           {/* Auth */}
