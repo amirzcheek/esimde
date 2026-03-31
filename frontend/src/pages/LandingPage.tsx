@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { newsApi } from '@/api'
 
 const PlayIcon = () => (
   <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
@@ -226,6 +227,118 @@ function VideoPlayer() {
   )
 }
 
+
+// ─── Карусель новостей ────────────────────────────────────────────────────────
+interface NewsItem { id: number; title: string; content: string; image_path: string | null; created_at: string }
+
+function NewsCarousel() {
+  const [items, setItems] = useState<NewsItem[]>([])
+  const [current, setCurrent] = useState(0)
+  const [modal, setModal] = useState<NewsItem | null>(null)
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    newsApi.list(1, 10).then(r => setItems(r.data.items || [])).catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    if (items.length < 2) return
+    timerRef.current = setInterval(() => setCurrent(c => (c + 1) % items.length), 4000)
+    return () => { if (timerRef.current) clearInterval(timerRef.current) }
+  }, [items.length])
+
+  const goTo = (i: number) => {
+    setCurrent(i)
+    if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null }
+    timerRef.current = setInterval(() => setCurrent(c => (c + 1) % items.length), 4000)
+  }
+
+  if (!items.length) return null
+
+  const item = items[current]
+  const imgUrl = item.image_path ? `/uploads/${item.image_path}` : null
+  const preview = item.content?.replace(/<[^>]+>/g, '').slice(0, 120) + '...'
+
+  return (
+    <section className="w-full py-12">
+      <div className="container max-w-7xl mx-auto px-4">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-gray-900">Новости</h2>
+          <Link to="/news" className="text-sm text-cyan-600 hover:underline font-medium">Все новости →</Link>
+        </div>
+
+        {/* Карточка */}
+        <div
+          className="relative w-full rounded-3xl overflow-hidden shadow-lg cursor-pointer group"
+          style={{ minHeight: 320 }}
+          onClick={() => setModal(item)}
+        >
+          {imgUrl ? (
+            <img src={imgUrl} alt={item.title} className="w-full h-80 object-cover transition-transform duration-500 group-hover:scale-105" />
+          ) : (
+            <div className="w-full h-80 bg-gradient-to-br from-cyan-100 to-blue-200 flex items-center justify-center text-6xl">📰</div>
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+          <div className="absolute bottom-0 left-0 right-0 p-6">
+            <p className="text-xs text-cyan-300 mb-2">{new Date(item.created_at).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+            <h3 className="text-white font-bold text-xl leading-tight mb-2">{item.title}</h3>
+            <p className="text-gray-300 text-sm line-clamp-2">{preview}</p>
+          </div>
+          <div className="absolute top-4 right-4 bg-white/20 backdrop-blur-sm text-white text-xs px-3 py-1 rounded-full">
+            Читать →
+          </div>
+        </div>
+
+        {/* Точки навигации */}
+        {items.length > 1 && (
+          <div className="flex justify-center gap-2 mt-4">
+            {items.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => goTo(i)}
+                className={`rounded-full transition-all duration-300 ${i === current ? 'w-6 h-2 bg-cyan-500' : 'w-2 h-2 bg-gray-300 hover:bg-gray-400'}`}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Модалка новости */}
+      {modal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setModal(null)}>
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+          <div
+            className="relative bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+            onClick={e => e.stopPropagation()}
+          >
+            {modal.image_path && (
+              <img src={`/uploads/${modal.image_path}`} alt={modal.title} className="w-full h-56 object-cover rounded-t-3xl" />
+            )}
+            <div className="p-6">
+              <p className="text-xs text-gray-400 mb-2">{new Date(modal.created_at).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+              <h2 className="text-xl font-bold text-gray-900 mb-4">{modal.title}</h2>
+              <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{modal.content?.replace(/<[^>]+>/g, '')}</div>
+              <div className="flex gap-3 mt-6">
+                <button onClick={() => setModal(null)} className="flex-1 py-2.5 rounded-full border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 transition">
+                  Закрыть
+                </button>
+                <button
+                  onClick={() => { setModal(null); navigate('/news') }}
+                  className="flex-1 py-2.5 rounded-full text-white text-sm font-semibold hover:opacity-90 transition"
+                  style={{ background: 'linear-gradient(to right, #06b6d4, #3b82f6)' }}
+                >
+                  Все новости
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </section>
+  )
+}
+
 export default function LandingPage() {
   return (
     <div>
@@ -309,6 +422,9 @@ export default function LandingPage() {
         </div>
         <BtnSolid to="/test">Пройти тест</BtnSolid>
       </section>
+
+      {/* NEWS */}
+      <NewsCarousel />
 
       {/* VIDEO */}
       <section className="w-full py-10 lg:py-16">
