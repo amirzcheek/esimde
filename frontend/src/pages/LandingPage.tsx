@@ -239,7 +239,7 @@ function NewsCarousel() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    newsApi.list(1, 10).then(r => setItems(r.data.items || [])).catch(() => {})
+    newsApi.list(1, 10).then(r => setItems(r.data.news || [])).catch(() => {})
   }, [])
 
   useEffect(() => {
