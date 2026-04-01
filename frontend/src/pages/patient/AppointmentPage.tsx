@@ -262,7 +262,7 @@ export default function AppointmentPage() {
             {/* Чекбоксы согласия */}
             <div className="mt-4 space-y-2 border-t pt-4">
               {[
-                { key: 'terms',   label: 'Я ознакомился(-ась) с', link: '/payment',  linkText: 'условиями оказания услуг' },
+                { key: 'terms',   label: 'Я ознакомился(-ась) с', link: '/agreement',  linkText: 'пользовательским соглашением' },
                 { key: 'privacy', label: 'Я ознакомился(-ась) с', link: '/privacy',  linkText: 'политикой конфиденциальности' },
                 { key: 'refund',  label: 'Я ознакомился(-ась) с', link: '/refund',   linkText: 'условиями возврата и отмены' },
               ].map(({ key, label, link, linkText }) => (

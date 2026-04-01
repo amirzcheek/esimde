@@ -63,6 +63,7 @@ export default function LandingFooter() {
               <Link to="/payment" className="hover:text-cyan-600 transition">Условия оплаты</Link>
               <Link to="/refund" className="hover:text-cyan-600 transition">Возврат и отмена</Link>
               <Link to="/privacy" className="hover:text-cyan-600 transition">Политика конфиденциальности</Link>
+              <Link to="/agreement" className="hover:text-cyan-600 transition">Пользовательское соглашение</Link>
             </div>
             {/* Логотипы */}
             <div className="flex items-center gap-2 flex-shrink-0">
