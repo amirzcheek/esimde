@@ -261,23 +261,23 @@ function NewsCarousel() {
   const preview = item.content?.replace(/<[^>]+>/g, '').slice(0, 120) + '...'
 
   return (
-    <section className="w-full py-12">
-      <div className="container max-w-7xl mx-auto px-4">
-        <div className="flex items-center justify-between mb-6">
+    <section className="w-full pt-0 pb-8">
+      <div className="w-full">
+        <div className="flex items-center justify-between mb-6 container max-w-7xl mx-auto px-4">
           <h2 className="text-2xl font-bold text-gray-900">Новости</h2>
           <Link to="/news" className="text-sm text-cyan-600 hover:underline font-medium">Все новости →</Link>
         </div>
 
         {/* Карточка */}
         <div
-          className="relative w-full rounded-3xl overflow-hidden shadow-lg cursor-pointer group"
+          className="relative w-full rounded-none md:rounded-3xl overflow-hidden shadow-lg cursor-pointer group"
           style={{ minHeight: 320 }}
           onClick={() => setModal(item)}
         >
           {imgUrl ? (
-            <img src={imgUrl} alt={item.title} className="w-full h-80 object-cover transition-transform duration-500 group-hover:scale-105" />
+            <img src={imgUrl} alt={item.title} className="w-full h-[500px] object-cover transition-transform duration-500 group-hover:scale-105" />
           ) : (
-            <div className="w-full h-80 bg-gradient-to-br from-cyan-100 to-blue-200 flex items-center justify-center text-6xl">📰</div>
+            <div className="w-full h-[500px] bg-gradient-to-br from-cyan-100 to-blue-200 flex items-center justify-center text-6xl">📰</div>
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
           <div className="absolute bottom-0 left-0 right-0 p-6">
@@ -292,7 +292,7 @@ function NewsCarousel() {
 
         {/* Точки навигации */}
         {items.length > 1 && (
-          <div className="flex justify-center gap-2 mt-4">
+          <div className="flex justify-center gap-2 mt-4 container max-w-7xl mx-auto px-4">
             {items.map((_, i) => (
               <button
                 key={i}
@@ -342,6 +342,7 @@ function NewsCarousel() {
 export default function LandingPage() {
   return (
     <div>
+
       {/* HERO */}
       <section className="container max-w-7xl mx-auto py-8 px-4">
         <div className="flex flex-col md:flex-row md:items-center gap-6 md:gap-16">
@@ -398,6 +399,9 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* NEWS */}
+      <NewsCarousel />
+
       {/* 3 BLOCKS */}
       <section id="about" className="flex flex-col items-center container max-w-7xl mx-auto py-12 px-4">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-16 mb-12 w-full">
@@ -422,9 +426,6 @@ export default function LandingPage() {
         </div>
         <BtnSolid to="/test">Пройти тест</BtnSolid>
       </section>
-
-      {/* NEWS */}
-      <NewsCarousel />
 
       {/* VIDEO */}
       <section className="w-full py-10 lg:py-16">
