@@ -4,7 +4,6 @@ from sqlalchemy import (
     DateTime, ForeignKey, Enum, JSON, SmallInteger, UniqueConstraint, Index
 )
 from sqlalchemy.ext.mutable import MutableDict
-
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from sqlalchemy.dialects.postgresql import UUID
@@ -16,6 +15,7 @@ import enum
 
 class AppointmentStatus(str, enum.Enum):
     PENDING = "pending"
+    AWAITING_PAYMENT = "awaiting_payment"
     CONFIRMED = "confirmed"
     CANCELLED = "cancelled"
     COMPLETED = "completed"
@@ -267,3 +267,33 @@ class Memory(Base):
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
     user = relationship("User", back_populates="memories")
+
+
+# ─── Payment (PayLink) ────────────────────────────────────────────────────────
+
+class PaymentStatus(str, enum.Enum):
+    PENDING  = "pending"
+    SUCCESS  = "success"
+    FAILED   = "failed"
+    REFUNDED = "refunded"
+
+class Payment(Base):
+    __tablename__ = "payments"
+
+    id             = Column(Integer, primary_key=True)
+    appointment_id = Column(Integer, ForeignKey("appointments.id", ondelete="CASCADE"), nullable=False, unique=True, index=True)
+    user_id        = Column(Integer, ForeignKey("users.id",         ondelete="CASCADE"), nullable=False, index=True)
+
+    # PayLink данные (заполняются после создания заказа)
+    paylink_order_id  = Column(String(200), nullable=True, index=True)
+    paylink_payment_url = Column(String(500), nullable=True)
+
+    amount     = Column(Integer, nullable=False)   # в тиынах (тенге * 100)
+    currency   = Column(String(10), default="KZT")
+    status     = Column(Enum(PaymentStatus), default=PaymentStatus.PENDING, nullable=False)
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    appointment = relationship("Appointment", backref="payment")
+    user        = relationship("User", foreign_keys=[user_id])

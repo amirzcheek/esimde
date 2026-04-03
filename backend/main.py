@@ -9,7 +9,7 @@ import time
 
 from app.core.config import settings
 from app.core.scheduler import start_scheduler, stop_scheduler
-from app.api.v1.endpoints import auth, appointments, users, tests, schedule, voice, admin, news, memories
+from app.api.v1.endpoints import auth, appointments, users, tests, schedule, voice, admin, news, memories, payments
 
 
 def setup_logging():
@@ -130,6 +130,7 @@ app.include_router(voice.router,        prefix=PREFIX)
 app.include_router(admin.router,        prefix=PREFIX)
 app.include_router(news.router,         prefix=PREFIX)
 app.include_router(memories.router,     prefix=PREFIX)
+app.include_router(payments.router,     prefix=PREFIX)
 
 
 @app.get("/health")

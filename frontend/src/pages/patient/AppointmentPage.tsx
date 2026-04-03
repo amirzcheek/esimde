@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { doctorsApi, appointmentsApi } from '@/api'
+import { doctorsApi, appointmentsApi, paymentsApi } from '@/api'
 import type { Doctor, DayInfo, SlotGroup } from '@/types'
 import { ChevronLeft, ChevronRight, X, MapPin } from 'lucide-react'
 import { toast } from 'sonner'
@@ -51,14 +51,32 @@ export default function AppointmentPage() {
   })
 
   const [consents, setConsents] = useState({ terms: false, privacy: false, refund: false })
+  const [paymentUrl, setPaymentUrl] = useState<string | null>(null)
+  const [createdAppointmentId, setCreatedAppointmentId] = useState<number | null>(null)
+  const [paymentLoading, setPaymentLoading] = useState(false)
   const allConsented = consents.terms && consents.privacy && consents.refund
 
   const bookMutation = useMutation({
     mutationFn: (slotId: number) => appointmentsApi.book(slotId),
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast.success('Запись создана!')
       qc.invalidateQueries({ queryKey: ['active-appointment'] })
-      navigate('/dashboard')
+      // После записи создаём платёж
+      const appointmentId = data?.data?.id
+      if (appointmentId) {
+        setCreatedAppointmentId(appointmentId)
+        setPaymentLoading(true)
+        paymentsApi.create(appointmentId)
+          .then(res => {
+            setPaymentUrl(res.data.payment_url)
+            // Сразу редиректим на оплату
+            window.location.href = res.data.payment_url
+          })
+          .catch(() => navigate('/dashboard'))
+          .finally(() => setPaymentLoading(false))
+      } else {
+        navigate('/dashboard')
+      }
     },
     onError: (e: any) => toast.error(e.response?.data?.detail || 'Ошибка при записи'),
   })

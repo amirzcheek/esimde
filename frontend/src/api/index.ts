@@ -162,3 +162,10 @@ export const memoriesApi = {
   update: (id: number, data: FormData) => api.put(`/memories/${id}`, data, { headers: { 'Content-Type': 'multipart/form-data' } }),
   delete: (id: number) => api.delete(`/memories/${id}`),
 }
+
+// ─── Payments ──────────────────────────────────────────────────────────────
+export const paymentsApi = {
+  create:  (appointmentId: number) => api.post(`/payments/create/${appointmentId}`),
+  status:  (appointmentId: number) => api.get(`/payments/status/${appointmentId}`),
+  refund:  (appointmentId: number) => api.post(`/payments/refund/${appointmentId}`),
+}

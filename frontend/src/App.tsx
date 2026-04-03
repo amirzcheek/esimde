@@ -10,6 +10,7 @@ import PaymentPage from '@/pages/PaymentPage'
 import RefundPage from '@/pages/RefundPage'
 import PrivacyPage from '@/pages/PrivacyPage'
 import AgreementPage from '@/pages/AgreementPage'
+import { PaymentSuccessPage, PaymentFailPage } from '@/pages/PaymentResultPages'
 import ProtectedRoute from '@/components/shared/ProtectedRoute'
 
 import LandingPage        from '@/pages/LandingPage'
@@ -51,6 +52,8 @@ export default function App() {
           <Route path="/refund"        element={<RefundPage />} />
           <Route path="/privacy"       element={<PrivacyPage />} />
           <Route path="/agreement"     element={<AgreementPage />} />
+          <Route path="/payment/success" element={<PaymentSuccessPage />} />
+          <Route path="/payment/fail"    element={<PaymentFailPage />} />
           </Route>
 
           {/* Auth */}
