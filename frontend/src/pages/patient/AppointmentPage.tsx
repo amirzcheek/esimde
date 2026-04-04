@@ -13,6 +13,36 @@ function formatDateLabel(iso: string) {
   return d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' })
 }
 
+function openPaylinkWidget(token: string, checkoutUrl: string) {
+  const params = {
+    checkout_url: checkoutUrl || 'https://checkout.paylink.kz',
+    fromWebview: true,
+    checkout: {
+      iframe: true,
+      test: true,          // TODO: убрать когда получим боевые credentials
+      transaction_type: 'payment',
+    },
+    token,
+    closeWidget: (status: string) => {
+      console.log('PayLink widget closed:', status)
+      if (status === 'successful') {
+        window.location.href = '/payment/success'
+      } else if (status === 'failed') {
+        window.location.href = '/payment/fail'
+      }
+      // null — закрыли без оплаты, pending — ждём подтверждения
+    },
+  }
+  // @ts-ignore — BeGateway загружается из внешнего скрипта
+  if (typeof BeGateway !== 'undefined') {
+    // @ts-ignore
+    new BeGateway(params).createWidget()
+  } else {
+    // Скрипт ещё не загрузился — ждём и пробуем снова
+    setTimeout(() => openPaylinkWidget(token, checkoutUrl), 500)
+  }
+}
+
 export default function AppointmentPage() {
   const navigate = useNavigate()
   const qc = useQueryClient()
@@ -51,6 +81,16 @@ export default function AppointmentPage() {
   })
 
   const [consents, setConsents] = useState({ terms: false, privacy: false, refund: false })
+
+  // Загружаем скрипт PayLink виджета
+  useEffect(() => {
+    if (document.getElementById('paylink-widget-script')) return
+    const script = document.createElement('script')
+    script.id = 'paylink-widget-script'
+    script.src = 'https://js.paylink.kz/widget/be_gateway.js'
+    script.type = 'text/javascript'
+    document.head.appendChild(script)
+  }, [])
   const [paymentUrl, setPaymentUrl] = useState<string | null>(null)
   const [createdAppointmentId, setCreatedAppointmentId] = useState<number | null>(null)
   const [paymentLoading, setPaymentLoading] = useState(false)
@@ -61,16 +101,14 @@ export default function AppointmentPage() {
     onSuccess: (data) => {
       toast.success('Запись создана!')
       qc.invalidateQueries({ queryKey: ['active-appointment'] })
-      // После записи создаём платёж
       const appointmentId = data?.data?.id
       if (appointmentId) {
         setCreatedAppointmentId(appointmentId)
         setPaymentLoading(true)
         paymentsApi.create(appointmentId)
           .then(res => {
-            setPaymentUrl(res.data.payment_url)
-            // Сразу редиректим на оплату
-            window.location.href = res.data.payment_url
+            setPaymentUrl(res.data.redirect_url)
+            openPaylinkWidget(res.data.token, res.data.checkout_url)
           })
           .catch(() => navigate('/dashboard'))
           .finally(() => setPaymentLoading(false))

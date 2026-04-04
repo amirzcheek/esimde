@@ -8,7 +8,7 @@ from app.core.database import get_db
 from app.core.security import get_current_user
 from app.models.user import User
 from app.models.models import Appointment, AppointmentStatus, Payment, PaymentStatus
-from app.core.paylink import create_payment_order, verify_webhook_signature, refund_payment
+from app.core.paylink import create_payment_token, verify_webhook, refund_payment
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/payments", tags=["payments"])
@@ -47,24 +47,27 @@ async def create_payment(
     order_id = f"esimde-{appointment_id}-{uuid.uuid4().hex[:8]}"
     description = f"Консультация врача · {appointment.date} {appointment.start_time}"
 
-    # Создаём заказ в PayLink
+    # Получаем токен платежа от PayLink
     try:
-        paylink_data = await create_payment_order(
+        paylink_data = await create_payment_token(
             order_id=order_id,
             amount_kzt=DEFAULT_PRICE_KZT,
             description=description,
-            user_email=current_user.email,
+            customer_email=current_user.email,
+            customer_first_name=current_user.first_name,
+            customer_last_name=current_user.last_name,
+            customer_phone=current_user.normalized_phone,
         )
     except Exception as e:
-        logger.error(f"PayLink create_order error: {e}")
+        logger.error(f"PayLink create_token error: {e}")
         raise HTTPException(status_code=502, detail="Ошибка платёжного сервиса. Попробуйте позже.")
 
     # Сохраняем платёж в БД
     payment = Payment(
         appointment_id=appointment_id,
         user_id=current_user.id,
-        paylink_order_id=paylink_data["order_id"],
-        paylink_payment_url=paylink_data["payment_url"],
+        paylink_order_id=order_id,
+        paylink_payment_url=paylink_data["redirect_url"],
         amount=DEFAULT_PRICE_KZT,
         status=PaymentStatus.PENDING,
     )
@@ -75,9 +78,11 @@ async def create_payment(
     await db.commit()
 
     return {
-        "payment_url": paylink_data["payment_url"],
-        "order_id": paylink_data["order_id"],
-        "amount": DEFAULT_PRICE_KZT,
+        "token":        paylink_data["token"],
+        "redirect_url": paylink_data["redirect_url"],
+        "order_id":     order_id,
+        "amount":       DEFAULT_PRICE_KZT,
+        "checkout_url": "https://checkout.paylink.kz",
     }
 
 
@@ -114,7 +119,7 @@ async def paylink_webhook(request: Request, db: AsyncSession = Depends(get_db)):
     signature = request.headers.get("X-PayLink-Signature", "")
 
     # Проверяем подпись (заглушка)
-    if not await verify_webhook_signature(payload, signature):
+    if not await verify_webhook(payload, signature):
         raise HTTPException(status_code=400, detail="Invalid signature")
 
     data = await request.json()
