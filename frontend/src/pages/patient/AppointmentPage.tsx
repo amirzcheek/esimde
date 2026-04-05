@@ -47,53 +47,62 @@ function openPaylinkWidget(token: string, checkoutUrl: string) {
 }
 
 function showPaymentStub() {
-  // Создаём оверлей-заглушку
   const overlay = document.createElement('div')
   overlay.id = 'paylink-stub-overlay'
-  overlay.style.cssText = `
-    position: fixed; inset: 0; z-index: 9999;
-    background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
-    display: flex; align-items: center; justify-content: center;
-    padding: 16px;
-  `
+  Object.assign(overlay.style, {
+    position: 'fixed', inset: '0', zIndex: '9999',
+    background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    padding: '16px',
+  })
 
-  overlay.innerHTML = \`
-    <div style="
-      background: white; border-radius: 24px; padding: 32px;
-      max-width: 420px; width: 100%; text-align: center;
-      box-shadow: 0 25px 60px rgba(0,0,0,0.3);
-    ">
-      <div style="font-size: 48px; margin-bottom: 16px;">💳</div>
-      <h2 style="font-size: 20px; font-weight: 700; color: #111827; margin-bottom: 8px;">
-        Оплата временно недоступна
-      </h2>
-      <p style="font-size: 14px; color: #6b7280; line-height: 1.6; margin-bottom: 8px;">
-        Платёжный виджет находится в режиме настройки.
-      </p>
-      <p style="font-size: 14px; color: #6b7280; line-height: 1.6; margin-bottom: 24px;">
-        Ваша запись <strong style="color: #111827;">сохранена</strong>. Для оплаты обратитесь к администратору:
-      </p>
-      <a href="mailto:esimde@galamat.com" style="
-        display: block; margin-bottom: 12px;
-        padding: 12px 24px; border-radius: 999px; text-decoration: none;
-        font-size: 14px; font-weight: 600; color: white;
-        background: linear-gradient(to right, #06b6d4, #3b82f6);
-      ">esimde@galamat.com</a>
-      <button id="paylink-stub-close" style="
-        width: 100%; padding: 12px 24px; border-radius: 999px;
-        border: 1px solid #e5e7eb; background: white;
-        font-size: 14px; color: #6b7280; cursor: pointer;
-      ">Закрыть</button>
-    </div>
-  \`
+  const card = document.createElement('div')
+  Object.assign(card.style, {
+    background: 'white', borderRadius: '24px', padding: '32px',
+    maxWidth: '420px', width: '100%', textAlign: 'center',
+    boxShadow: '0 25px 60px rgba(0,0,0,0.3)',
+  })
 
+  const icon = document.createElement('div')
+  icon.textContent = '💳'
+  icon.style.fontSize = '48px'
+  icon.style.marginBottom = '16px'
+
+  const title = document.createElement('h2')
+  title.textContent = 'Оплата временно недоступна'
+  Object.assign(title.style, { fontSize: '20px', fontWeight: '700', color: '#111827', marginBottom: '8px' })
+
+  const text1 = document.createElement('p')
+  text1.textContent = 'Платёжный виджет находится в режиме настройки.'
+  Object.assign(text1.style, { fontSize: '14px', color: '#6b7280', lineHeight: '1.6', marginBottom: '8px' })
+
+  const text2 = document.createElement('p')
+  text2.innerHTML = 'Ваша запись <strong style="color:#111827">сохранена</strong>. Для оплаты обратитесь к администратору:'
+  Object.assign(text2.style, { fontSize: '14px', color: '#6b7280', lineHeight: '1.6', marginBottom: '24px' })
+
+  const emailBtn = document.createElement('a')
+  emailBtn.href = 'mailto:esimde@galamat.com'
+  emailBtn.textContent = 'esimde@galamat.com'
+  Object.assign(emailBtn.style, {
+    display: 'block', marginBottom: '12px',
+    padding: '12px 24px', borderRadius: '999px', textDecoration: 'none',
+    fontSize: '14px', fontWeight: '600', color: 'white',
+    background: 'linear-gradient(to right, #06b6d4, #3b82f6)',
+  })
+
+  const closeBtn = document.createElement('button')
+  closeBtn.textContent = 'Закрыть'
+  Object.assign(closeBtn.style, {
+    width: '100%', padding: '12px 24px', borderRadius: '999px',
+    border: '1px solid #e5e7eb', background: 'white',
+    fontSize: '14px', color: '#6b7280', cursor: 'pointer',
+  })
+  closeBtn.onclick = () => overlay.remove()
+  overlay.onclick = (e) => { if (e.target === overlay) overlay.remove() }
+
+  card.append(icon, title, text1, text2, emailBtn, closeBtn)
+  overlay.appendChild(card)
   document.body.appendChild(overlay)
-  document.getElementById('paylink-stub-close')?.addEventListener('click', () => {
-    overlay.remove()
-  })
-  overlay.addEventListener('click', (e) => {
-    if (e.target === overlay) overlay.remove()
-  })
 }
 
 export default function AppointmentPage() {
