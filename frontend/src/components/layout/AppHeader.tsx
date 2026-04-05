@@ -66,6 +66,7 @@ export default function AppHeader() {
   ] : isPatient ? [
     { to: '/dashboard',          label: 'Профиль' },
     { to: '/appointment',        label: 'Запись' },
+    { to: '/services',           label: 'Услуги и цены' },
     { to: '/news',               label: 'Новости' },
   ] : isAdmin ? [
     { to: '/admin/audit', label: 'Аудит' },
