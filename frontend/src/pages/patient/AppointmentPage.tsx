@@ -14,33 +14,86 @@ function formatDateLabel(iso: string) {
 }
 
 function openPaylinkWidget(token: string, checkoutUrl: string) {
+  // Если stub токен — показываем заглушку вместо реального виджета
+  if (token.startsWith('stub_token_')) {
+    showPaymentStub()
+    return
+  }
+
   const params = {
     checkout_url: checkoutUrl || 'https://checkout.paylink.kz',
     fromWebview: true,
     checkout: {
       iframe: true,
-      test: true,          // TODO: убрать когда получим боевые credentials
+      test: false,
       transaction_type: 'payment',
     },
     token,
     closeWidget: (status: string) => {
-      console.log('PayLink widget closed:', status)
       if (status === 'successful') {
         window.location.href = '/payment/success'
       } else if (status === 'failed') {
         window.location.href = '/payment/fail'
       }
-      // null — закрыли без оплаты, pending — ждём подтверждения
     },
   }
-  // @ts-ignore — BeGateway загружается из внешнего скрипта
+  // @ts-ignore
   if (typeof BeGateway !== 'undefined') {
     // @ts-ignore
     new BeGateway(params).createWidget()
   } else {
-    // Скрипт ещё не загрузился — ждём и пробуем снова
     setTimeout(() => openPaylinkWidget(token, checkoutUrl), 500)
   }
+}
+
+function showPaymentStub() {
+  // Создаём оверлей-заглушку
+  const overlay = document.createElement('div')
+  overlay.id = 'paylink-stub-overlay'
+  overlay.style.cssText = `
+    position: fixed; inset: 0; z-index: 9999;
+    background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center;
+    padding: 16px;
+  `
+
+  overlay.innerHTML = \`
+    <div style="
+      background: white; border-radius: 24px; padding: 32px;
+      max-width: 420px; width: 100%; text-align: center;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+    ">
+      <div style="font-size: 48px; margin-bottom: 16px;">💳</div>
+      <h2 style="font-size: 20px; font-weight: 700; color: #111827; margin-bottom: 8px;">
+        Оплата временно недоступна
+      </h2>
+      <p style="font-size: 14px; color: #6b7280; line-height: 1.6; margin-bottom: 8px;">
+        Платёжный виджет находится в режиме настройки.
+      </p>
+      <p style="font-size: 14px; color: #6b7280; line-height: 1.6; margin-bottom: 24px;">
+        Ваша запись <strong style="color: #111827;">сохранена</strong>. Для оплаты обратитесь к администратору:
+      </p>
+      <a href="mailto:esimde@galamat.com" style="
+        display: block; margin-bottom: 12px;
+        padding: 12px 24px; border-radius: 999px; text-decoration: none;
+        font-size: 14px; font-weight: 600; color: white;
+        background: linear-gradient(to right, #06b6d4, #3b82f6);
+      ">esimde@galamat.com</a>
+      <button id="paylink-stub-close" style="
+        width: 100%; padding: 12px 24px; border-radius: 999px;
+        border: 1px solid #e5e7eb; background: white;
+        font-size: 14px; color: #6b7280; cursor: pointer;
+      ">Закрыть</button>
+    </div>
+  \`
+
+  document.body.appendChild(overlay)
+  document.getElementById('paylink-stub-close')?.addEventListener('click', () => {
+    overlay.remove()
+  })
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) overlay.remove()
+  })
 }
 
 export default function AppointmentPage() {

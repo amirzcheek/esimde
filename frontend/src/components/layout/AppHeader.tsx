@@ -72,6 +72,7 @@ export default function AppHeader() {
     { to: '/news',        label: 'Новости' },
   ] : [
     { to: '/#about',    label: 'О нас' },
+    { to: '/services',  label: 'Услуги и цены' },
     { to: '/news',      label: 'Новости' },
     { to: '/#contacts', label: 'Контакты' },
   ]
